@@ -1,0 +1,95 @@
+## touch_tracker.py ##
+## Handles the FT5406 touchscreen library setup and interpretation ##
+
+debug = False
+
+from geom import Point
+from ft5406 import Touchscreen, TS_PRESS, TS_RELEASE, TS_MOVE
+
+class Tracker:
+  # list for storing location updates
+  points = [ Point() for p in range(10) ]
+
+  # returns the closest point to the supplied coords
+  def find_closest (self, x, y):
+    temp   = Point (x,y)
+    result = Point (x,y)
+    dist = 1000
+    for p in self.points:
+      latest = temp.dist2(p)
+      if 0 < latest < dist:
+        dist = latest
+        result = p
+    return result
+
+  # called when a touch starts
+  def __touch_down (self, touch):
+    if debug:
+      print ("pressed", touch.x, ",", touch.y)
+    # save the data from this touch point
+    self.points[touch.id].inst_move_to(touch.x, touch.y)
+
+  # called when a touch ends
+  def __touch_lift (self, touch):
+    if debug:
+      print ("released", touch.x, ",", touch.y)
+    # we'll use negative coords to mark this point as invalid
+    self.points[touch.id].inst_move_to(-1, -1)
+
+  # called when a touch moves
+  def __touch_move (self, touch):
+    if debug:
+      print ("moved", touch.x, ",", touch.y)
+    # update the coords of the point
+    self.points[touch.id].inst_move_to(touch.x, touch.y)
+
+  # what to do when an event happens
+  def __touch_handler (self, event, touch):
+    if event == TS_PRESS:
+      self.__touch_down (touch)
+
+    if event == TS_RELEASE:
+      self.__touch_lift (touch)
+
+    if event == TS_MOVE:
+      self.__touch_move (touch)
+
+  # set everything up with this
+  def __init__ (self):
+    self.ts = Touchscreen()
+
+    for touch in self.ts.touches:
+      touch.on_press   = self.__touch_handler
+      touch.on_release = self.__touch_handler
+      touch.on_move    = self.__touch_handler
+
+  # enable or disable touch events
+  def active (self, bool):
+    if bool == True:
+      self.ts.run()
+    else:
+      self.ts.stop()
+
+# test code, only runs when this file run directly (IE, not imported)
+if __name__ == '__main__':
+  from sys import exit
+  from time import sleep
+
+  debug = True
+  t = Tracker()
+  t.active (True)
+
+  c = 0
+
+  try:
+    while True:
+      c += 1
+      if c == 1000:
+        c = 0
+        print (".")
+        sleep(1)
+  except KeyboardInterrupt:
+    print ("stopping!")
+  finally:
+    t.active (False)
+    exit(1)
