@@ -1,7 +1,7 @@
 ## touch_tracker.py ##
 ## Handles the FT5406 touchscreen library setup and interpretation ##
 
-debug = True
+debug = False
 
 from geom import Point
 from ft5406 import Touchscreen, TS_PRESS, TS_RELEASE, TS_MOVE
@@ -21,7 +21,8 @@ class Tracker:
       if 0 < latest < dist and p.get_x() > 0 and p.get_y() > 0:
         dist = latest
         result = p
-        print ("found: ",result.get_x(), ",", result.get_y())
+        if debug:
+          print ("found: ",result.get_x(), ",", result.get_y())
     return result
 
   # called when a touch starts
