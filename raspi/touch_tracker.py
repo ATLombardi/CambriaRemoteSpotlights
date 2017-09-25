@@ -1,47 +1,49 @@
 ## touch_tracker.py ##
 ## Handles the FT5406 touchscreen library setup and interpretation ##
 
-debug = False
+debug = True
 
 from geom import Point
 from ft5406 import Touchscreen, TS_PRESS, TS_RELEASE, TS_MOVE
 
 class Tracker:
   # list for storing location updates
-  points = [ Point() for p in range(10) ]
+  points = [ Point(-1,-1) for p in range(10) ]
 
   # returns the closest point to the supplied coords
   def find_closest (self, x, y):
+    #print ("searching around ",x,",",y)
     temp   = Point (x,y)
     result = Point (x,y)
-    dist = 1000
+    dist = 100000
     for p in self.points:
       latest = temp.dist2(p)
-      if 0 < latest < dist:
+      if 0 < latest < dist and p.get_x() > 0 and p.get_y() > 0:
         dist = latest
         result = p
+        print ("found: ",result.get_x(), ",", result.get_y())
     return result
 
   # called when a touch starts
   def __touch_down (self, touch):
     if debug:
-      print ("pressed", touch.x, ",", touch.y)
+      print ("pressed",touch.slot, ":", touch.x, ",", touch.y)
     # save the data from this touch point
-    self.points[touch.id].inst_move_to(touch.x, touch.y)
+    self.points[touch.slot].inst_move_to(touch.x, touch.y)
 
   # called when a touch ends
   def __touch_lift (self, touch):
     if debug:
-      print ("released", touch.x, ",", touch.y)
+      print ("released",touch.slot, ":", touch.x, ",", touch.y)
     # we'll use negative coords to mark this point as invalid
-    self.points[touch.id].inst_move_to(-1, -1)
+    self.points[touch.slot].inst_move_to(-1, -1)
 
   # called when a touch moves
   def __touch_move (self, touch):
     if debug:
-      print ("moved", touch.x, ",", touch.y)
+      print ("moved",touch.slot, ":", touch.x, ",", touch.y)
     # update the coords of the point
-    self.points[touch.id].inst_move_to(touch.x, touch.y)
+    self.points[touch.slot].inst_move_to(touch.x, touch.y)
 
   # what to do when an event happens
   def __touch_handler (self, event, touch):

@@ -3,14 +3,9 @@
 
 class Point:
   # create a Point at (x,y)
-  def __init__(self, x, y):
+  def __init__(self, x=0, y=0):
     self.x = x
     self.y = y
-
-  # create a Point at (0,0)
-  def __init__(self):
-    self.x = 0
-    self.y = 0
 
   # returns the square of distance for speed
   def dist2 (self, other):

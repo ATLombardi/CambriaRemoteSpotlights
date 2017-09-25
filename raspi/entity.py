@@ -3,20 +3,14 @@
 from geom import Point
 
 class Entity:
-  # create an entity at (0,0)
-  def __init__ (self):
-    self.pos    = Point()
-    self.target = Point()
-
   # create an entity at (x,y)
-  def __init__ (self, x, y):
-    self.sim    = sim
+  def __init__ (self, x=0, y=0):
     self.pos    = Point(x, y)
     self.target = Point(x, y)
 
   # set the target for motion updates
-  def set_target (self, x, y):
-    target.inst_move_to(x,y)
+  def set_target (self, point):
+    self.target.inst_move_to(point.get_x(), point.get_y())
 
   def get_location (self):
     return self.pos
@@ -24,4 +18,4 @@ class Entity:
   # allow the entity to move itself
   def update (self, delta_t):
     # child classes will override this
-	pass
+    pass
