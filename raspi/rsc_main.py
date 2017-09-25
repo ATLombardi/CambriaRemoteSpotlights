@@ -24,6 +24,9 @@ def main ():
   # prepare the pygame window
   pygame.init()
 
+  # hide the mouse please
+  pygame.mouse.set_visible(False)
+
   screen = pygame.display.set_mode( (800,480) ) # , pygame.FULLSCREEN)
   pygame.display.set_caption('Spotlight Controls')
   bg = Background('/home/pi/Pictures/stage.jpg', (0,0) )
@@ -66,10 +69,10 @@ def main ():
 
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
-          should_stop = true
+          should_stop = True
           exit_reason_number = 1
         elif event.type == pygame.KEYDOWN:
-          should_stop = true
+          should_stop = True
           exit_reason_number = 2
 
       clock.tick (60)
