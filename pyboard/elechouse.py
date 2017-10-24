@@ -67,10 +67,14 @@ class Driver:
 
     # create an instance. Channel is purely cosmetic, the actual
     # control depends on wiring
-    def __init__(self, pin_name_left, pin_name_right, channel='A'):
+    def __init__(self, pin_name_left, pin_name_right, pin_name_en, pin_name_dis, channel='A'):
         self.name  = channel
-        self.dis   = 1
-        self.en    = 0
+        self.dis   = Pin(pin_name_dis, Pin.OUT_PP)
+        # make sure motor starts out disabled	
+        self.dis.high()
+        self.en    = Pin(pin_name_en,  Pin.OUT_PP)
+        # make sure motor starts out coasting
+        self.en.low()
         self.speed = 0
         self.lchan = self.__set_up_channel__(pin_name_left)
         self.rchan = self.__set_up_channel__(pin_name_right)
@@ -83,22 +87,29 @@ class Driver:
     def get_status (self):
         return [
             'drive channel',   self.name,
-            'output enabled',  self.en,
-            'output disabled', self.dis,
+            'output enabled',  self.en.value(),
+            'output disabled', self.dis.value(),
             'speed setting',   self.speed
         ]
 
-    # set whether output is enabled (True will also brake)
-    def set_enabled (self, boolean):
-        if boolean:
-            self.dis = 0
-            self.en  = 1
-        else:
-            self.en  = 0
+    # stop the motors with brake or coast
+    def stop (self, brake=True):
+        self.speed = 0
+        self.lchan.pulse_width_percent(100)
+        self.rchan.pulse_width_percent(100)
+        self.en.value(brake)
 
-    # raise the disable pin on this driver
+    # enable the motors
+    def enable (self):
+        self.stop()
+        self.dis.low()
+        self.en.high()
+
+    # disable the motors
     def disable (self):
-        self.dis = 1
+        self.stop()
+        self.dis.high()
+        self.en.low()
 
     # set the driving speed (PWM %) of this driver
     def set_speed (self, speed):
@@ -107,8 +118,8 @@ class Driver:
                 speed = -100
             self.speed = speed
             if not (self.lchan == None):
-                # smaller PWM duty cycles = faster speed
-                self.lchan.pulse_width_percent(100-speed)
+                # speed is negative here, so addition is subtraction
+                self.lchan.pulse_width_percent(100+speed)
                 self.rchan.pulse_width_percent(100)
             else:
                 print ('Fake Channel speed set to ',speed)
