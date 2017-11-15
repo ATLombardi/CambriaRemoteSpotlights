@@ -1,0 +1,46 @@
+PIN    FUNCTIONS         ENCODER?    MOTOR?    SERIAL?   WIRING
+----------------------+-----------+---------+----------+--------
+Y1   T8.1 UART6T      |     Y     |    Y    |    Y     |  E1A   
+Y2   T8.2 UART6R      |     Y     |    Y    |    Y     |  E1B   
+Y3   T4.3 T10.1       |           |    Y    |          |  E1Z   
+Y4   T4.4 T11.1       |           |    Y    |          |        
+Y5   -                |           |         |          |        
+Y6   -                |           |         |          |  E1Z   
+Y7   T12.1            |     Y     |    Y    |          |  E2B   
+Y8   T12.2            |     Y     |    Y    |          |  E2A   
+X9   T4.1 UART1T      |     Y     |    Y    |    Y     |  CMT   
+X10  T4.2 UART1R      |     Y     |    Y    |    Y     |  CMR   
+X11  -                |           |         |          |        
+X12  -                |           |         |          |        
+----------------------+-----------+---------+----------+--------
+Y12  -                |           |         |          |  MBD   
+Y11  -                |           |         |          |  MBE   
+Y10  UART3R T2.4      |           |    Y    |    Y     |  MBL   
+Y9   UART3T T2.3      |           |    Y    |    Y     |  MBR   
+X8   T14.1            |     Y     |    Y    |          |        
+X7   T13.1            |     Y     |    Y    |          |        
+X6   T2.1             |     Y     |    Y    |          |        
+X5   -                |           |         |          |        
+X4   T9.2 T2.4 UART2R |     Y     |    Y    |    Y     |  MAD   
+X3   T9.1 T2.3 UART2T |     Y     |    Y    |    Y     |  MAE  
+X2   T2.2 UART4R      |     Y     |    Y    |    Y     |  MAL   
+X1   T2.1 UART4T      |     Y     |    Y    |    Y     |  MAR   
+----------------------+-----------+---------+----------+--------
+1    VCC              |     -     |    -    |    --    |  E1
+2    VCC              |     -     |    -    |    --    |  E2
+3    VCC              |     -     |    -    |    --    |  RS
+4    VCC              |     -     |    -    |    --    |  M
+1    GND              |     -     |    -    |    --    |  E1
+2    GND              |     -     |    -    |    --    |  E2
+3    GND              |     -     |    -    |    --    |  RS
+4    GND              |     -     |    -    |    --    |  M
+
+
+PINS REQUIRED:
+ MOTOR A      MOTOR B       RS-232       ENCODER A    ENCODER B
+-MOT5V       -MOT0V        -RS_5V       -ENC1B       -ENC2B
+-MOT1E       -MOT2E        -RS_RX       -ENC1+       -ENC2+
+-MOT1R       -MOT2R        -RS_TX       -ENC1A       -ENC2A
+-MOT1D       -MOT2D        -RSGND       -ENC1Z       -ENC2Z
+-MOT1L       -MOT2L        ------       -ENC1-       -ENC1-
+
