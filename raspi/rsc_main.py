@@ -14,7 +14,7 @@ def main ():
   print ("init serial...")
   try:
     ser_a = RS232('/dev/ttyUSB0',115200)
-    ser_b = RS232('/dev/ttyUSB1',115200)
+#    ser_b = RS232('/dev/ttyUSB1',115200)
   except:
     print ("Error when trying to connect to serial ports!")
   print ("done.")
@@ -61,18 +61,35 @@ def main ():
       pos_l = spot_l.get_location()
       pos_r = spot_r.get_location()
 
+      target_l = touch.find_closest(pos_l.get_x(), pos_l.get_y() )
+      target_r = touch.find_closest(pos_r.get_x(), pos_r.get_y() )
+
+      target_l = target_l.subtract(spot_l.get_home())
+      target_r = target_r.subtract(spot_r.get_home())
+
+      ser_a.update_inbox()
+#      ser_b.update_inbox()
+
+      a_point = Point (
+        ser_a.read_inbox(ser_a.CMD_SPA),
+        ser_a.read_inbox(ser_a.CMD_SPB)
+      )
+
+#      b_point = Point (
+#        ser_b.read_inbox(ser_b.CMD_SPA),
+#        ser_b.read_inbox(ser_b.CMD_SPB)
+#      )
+
       if ser_a.get_side() == 'L':
-        ser_a.send_command(pos_l.get_x(), pos_l.get_y())
-        ser_b.send_command(pos_r.get_x(), pos_r.get_y())
+        spot_l.teleport_to(a_point.add(spot_l.get_home()))
+#        spot_r.teleport_to(b_point.add(spot_r.get_home()))
+        ser_a.send_command(target_l.get_x(), target_l.get_y())
+#        ser_b.send_command(target_r.get_x(), target_r.get_y())
       else:
-        ser_a.send_command(pos_r.get_x(), pos_r.get_y())
-        ser_b.send_command(pos_l.get_x(), pos_l.get_y())
-
-      spot_l.set_target(touch.find_closest(pos_l.get_x(), pos_l.get_y() ))
-      spot_r.set_target(touch.find_closest(pos_r.get_x(), pos_r.get_y() ))
-
-      spot_l.update(delta)
-      spot_r.update(delta)
+        spot_r.teleport_to(a_point.add(spot_r.get_home()))
+#        spot_l.teleport_to(b_point.add(spot_l.get_home()))
+        ser_a.send_command(target_r.get_x(), target_r.get_y())
+#        ser_b.send_command(target_l.get_x(), target_l.get_y())
 
       # actually do rendering
       screen.fill( (255,255,255) )
@@ -91,11 +108,13 @@ def main ():
           should_stop = True
           exit_reason_number = 2
 
-      clock.tick (60)
+      clock.tick (240)
 
   # handle exits cleanly
   except KeyboardInterrupt:
     print ("Received keyboard interrupt! Stopping...")
+  except Exception as e:
+    print (e)
   finally:
     # turn off these events just in case
     touch.active(False)

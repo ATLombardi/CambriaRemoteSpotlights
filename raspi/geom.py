@@ -17,6 +17,18 @@ class Point:
   def dist (self, other):
     return dist(other)**0.5
 
+  # returns the sum of two point vectors as a Point
+  def add (self, other):
+    xs = self.x + other.x
+    ys = self.y + other.y
+    return Point(xs,ys)
+
+  # returns the difference between two point vectors as a Point
+  def subtract (self, other):
+    xs = self.x - other.x
+    ys = self.y - other.y
+    return Point(xs,ys)
+
   # sets the Point's new location instantly
   def inst_move_to (self, x, y):
     self.x = x

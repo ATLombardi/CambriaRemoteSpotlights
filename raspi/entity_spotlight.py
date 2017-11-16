@@ -16,6 +16,10 @@ class Entity_Spotlight(Entity):
   def go_home (self):
     self.target = self.home
 
+  # returns the home position of this light
+  def get_home (self):
+    return self.home
+
   # saves the spotlight's current position as 'home'
   def set_home (self):
     self.home = self.pos
@@ -24,6 +28,12 @@ class Entity_Spotlight(Entity):
   def render (self):
     # TODO: put pygame rendering code here
     pass
+
+  # overrides the teleport_to in Entity
+  def teleport_to (self, point):
+    print ("sent to",point.get_x())
+    self.pos.inst_move_to(point.get_x(), point.get_y())
+    self.icon.move_to(point.get_x(), point.get_y())
 
   # updates the spotlight's beam on screen
   def update (self, delta_t):
