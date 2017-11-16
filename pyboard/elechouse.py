@@ -28,17 +28,17 @@ class Driver:
     
     # static dictionary for the channel numbers
     __channel_dict__ = {
-        'X9'  : 1,
-        'B6'  : 1,
-        'X10' : 2,
-        'B7'  : 2,
-        'Y3'  : 3,
-        'B8'  : 3,
-        'Y4'  : 4,
-        'B9'  : 4
+        'X7'  : 1,
+        'A6'  : 1,
+        'X8'  : 2,
+        'A7'  : 2,
+        'Y11' : 3,
+        'B0'  : 3,
+        'Y12' : 4,
+        'B1'  : 4
     }
 
-    __timer__ = Timer(4)
+    __timer__ = Timer(3)
 
     # private method that handles timer and pin initialization
     def __set_up_channel__(self, pin_name):
