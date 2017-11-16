@@ -7,7 +7,7 @@ from time import sleep_us
 
 # --"constants"--
 LOOP_DELAY = 10 # us
-SER_BUS    = 2
+SER_BUS    = 6
 SER_BAUD   = 115200
 
 def main ():
@@ -43,10 +43,11 @@ def main ():
     encB.Zero()
 
     # -- Enter Main Loop --
-    while True:
+    while not ser.should_close():
         # read Serial
-        setpoint_a = ser.get_cmd(ser.CMD_SPA)
-        setpoint_b = ser.get_cmd(ser.CMD_SPB)
+        ser.update_cmds()
+        setpoint_a = ser.read_cmd(ser.CMD_SPA)
+        setpoint_b = ser.read_cmd(ser.CMD_SPB)
 
         # read encoders
         new_pos_a = encA.Read()
@@ -57,9 +58,13 @@ def main ():
         v_b = new_pos_b - old_pos_b
         old_pos_b = new_pos_b
 
+        # update serial feedback
+        ser.refresh_reply(new_pos_a, new_pos_b)
+        ser.send_reply()
+
         # run controllers
-        act_a = control_a.run(setpoint_a,v_a,LOOP_DELAY)
-        act_b = control_b.run(setpoint_b,v_b,LOOP_DELAY)
+        act_a = control_a.run(setpoint_a,new_pos_a,LOOP_DELAY)
+        act_b = control_b.run(setpoint_b,new_pos_b,LOOP_DELAY)
 
         # apply results
         motor_a.set_speed(act_a)
@@ -67,3 +72,9 @@ def main ():
 
         # regulate loop rate
         sleep_us(LOOP_DELAY)
+
+    # after the serial port tells us to shut down
+    print ('Master closed serial port, disabling motors...')
+    motor_a.disable()
+    motor_b.disable()
+    print ('System stopped. Good night.')

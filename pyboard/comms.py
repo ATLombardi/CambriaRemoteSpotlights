@@ -9,15 +9,24 @@ class Serial:
     __uart__ = None
 
     # command data array
-    __cmds__  = [0,0,0]
+    __cmds__  = [0,0,0,0,0]
 
     # reply data array
-    __reply__ = ['A','000','B','000','']
+    __reply__ = ['','A','000','B','000']
+
+    # expected length of command data
+    LEN_CMD = 4
 
     # command index 'constants'
-    CMD_SPA = 1
-    CMD_SPB = 3
-    CMD_ACK = 4
+    CMD_SPA = 2
+    CMD_SPB = 4
+    CMD_ACK = 0
+
+    # stores which side this unit is on (R or L)
+    side_tag = '!' # defaults to "doesn't know", set from main
+
+    # stores whether we've seen a shutdown notice from the Pi
+    __flag_down__ = False
 
     # data-input mode tracking
     __mode__ = 0
@@ -49,20 +58,23 @@ class Serial:
             elif dat == b'B' or dat == b'b':
                 self.__mode__ = 2
             elif dat == b'?':
-                self.__reply__[self.CMD_ACK] = '!'
-        elif self.is_waiting() > 3:
+                self.__reply__[self.CMD_ACK] = self.side_tag
+            elif dat == b'K':
+                self.__flag_down__ = True
+        elif self.is_waiting() > self.LEN_CMD-1:
             if self.__mode__ == 1:
-                self.__cmds__[self.CMD_SPA] = int(self.recv(3))
+                self.__cmds__[self.CMD_SPA] = int(self.recv(self.LEN_CMD))
                 self.__mode__ = 0
+                print('Read:',self.__cmds__[self.CMD_SPA],'and Mode is now 0.')
             elif self.__mode__ == 2:
-                self.__cmds__[self.CMD_SPB] = int(self.recv(3))
+                self.__cmds__[self.CMD_SPB] = int(self.recv(self.LEN_CMD))
                 self.__mode__ = 0
 
     # pull the latest data from the command list
     def read_cmd (self, index):
-        if index == CMD_SPA:
+        if index == self.CMD_SPA:
             ret = self.__cmds__[self.CMD_SPA]
-        elif index == CMD_SPB:
+        elif index == self.CMD_SPB:
             ret = self.__cmds__[self.CMD_SPB]
         else:
             ret = 0
@@ -70,11 +82,16 @@ class Serial:
 
     # put some data into the reply buffer
     def refresh_reply (self, ra, rb):
-        self.__reply__[self.CMD_SPA] = '{:03}'.format(ra)
-        self.__reply__[self.CMD_SPB] = '{:03}'.format(rb)
+        self.__reply__[self.CMD_SPA] = '{:+06}'.format(ra)
+        self.__reply__[self.CMD_SPB] = '{:+06}'.format(rb)
 
     # send a reply to the master
     def send_reply (self):
         for x in range (len(self.__reply__)):
             self.send(self.__reply__[x])
         self.__reply__[self.CMD_ACK] = ' '
+
+    # check whether the shutdown flag is raised
+    def should_close (self):
+        return __flag_down__
+
