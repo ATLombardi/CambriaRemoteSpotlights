@@ -32,7 +32,11 @@ class RS232:
     bytesize=serial.EIGHTBITS
   ):
     # create and activate a serial port object
-    self.ser = serial.Serial(port,baud,parity=parity,stopbits=stop,bytesize=bytesize)
+    self.ser = serial.Serial(port,baud,
+      parity=parity,
+      stopbits=stop,
+      bytesize=bytesize
+    )
     # check that the connection worked
     if not self.ser.isOpen():
       self.ser.open()
@@ -74,17 +78,22 @@ class RS232:
         self.__side__ = ' '
         print ("Warning: Pyboard orientation is unknown.")
 
-      dat = self.recv().decode()
+      dat = self.recv()
       val = []
       # regex check for +,-, or digits
-      while ( re.match("^[+\-0-9]+$",dat) and self.is_waiting() ):
+      while ( re.match(b"^[+\-0-9]+$",dat) and self.is_waiting() ):
         val.append(dat)
-        dat = self.recv().decode()
+        dat = self.recv()
       # convert it from a list into a number
       if len(val) > 0:
-        val = int(''.join(map(str,val)))
+#        val = int(''.join(map('{}',val)))
+        digits = []
+        for i in range (len(val)):
+          digits.append(val[i].decode())
+        val = int(''.join(digits))
       else:
         val = 0
+      # store the value in the right place
       if self.__state__ == 1:
         self.__inbox__[self.CMD_SPA] = val
         self.__state__ = 0
