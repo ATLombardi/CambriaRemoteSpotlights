@@ -4,11 +4,20 @@
 from touch_tracker import *
 from graphics import *
 from entity_spotlight import *
+from comms import *
 
 import pygame
 
 def main ():
   print ("Starting up...")
+
+  print ("init serial...")
+  try:
+    ser_a = RS232('/dev/ttyUSB0',115200)
+    ser_b = RS232('/dev/ttyUSB1',115200)
+  except:
+    print ("Error when trying to connect to serial ports!")
+  print ("done.")
 
   print ("init touch...")
   # initialize touch tracking
@@ -51,6 +60,13 @@ def main ():
       # set the spotlights to move towards the closest touch points
       pos_l = spot_l.get_location()
       pos_r = spot_r.get_location()
+
+      if ser_a.get_side() == 'L':
+        ser_a.send_command(pos_l.get_x(), pos_l.get_y())
+        ser_b.send_command(pos_r.get_x(), pos_r.get_y())
+      else:
+        ser_a.send_command(pos_r.get_x(), pos_r.get_y())
+        ser_b.send_command(pos_l.get_x(), pos_l.get_y())
 
       spot_l.set_target(touch.find_closest(pos_l.get_x(), pos_l.get_y() ))
       spot_r.set_target(touch.find_closest(pos_r.get_x(), pos_r.get_y() ))
