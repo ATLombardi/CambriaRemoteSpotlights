@@ -59,6 +59,7 @@ def main ():
         old_pos_b = new_pos_b
 
         # update serial feedback
+#        print ('a:',new_pos_a,' b:',new_pos_b)
         ser.refresh_reply(new_pos_a, new_pos_b)
         ser.send_reply()
 

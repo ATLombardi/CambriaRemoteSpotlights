@@ -8,6 +8,9 @@ class Serial:
     # the UART object this class uses
     __uart__ = None
 
+    # indicates that we recently got a message
+    __flag_reply__ = False
+
     # command data array
     __cmds__  = [0,0,0,0,0]
 
@@ -42,6 +45,7 @@ class Serial:
 
     # simple wrapper
     def send (self, data):
+#        print ('>>',data)
         self.__uart__.write(data)
 
     # returns the number of characters waiting
@@ -54,7 +58,7 @@ class Serial:
             dat = self.recv()
             if dat == b'A' or dat == b'a':
                 self.__mode__ = 1
-                print('Mode is now 1')
+#                print('Mode is now 1')
             elif dat == b'B' or dat == b'b':
                 self.__mode__ = 2
             elif dat == b'?':
@@ -65,10 +69,12 @@ class Serial:
             if self.__mode__ == 1:
                 self.__cmds__[self.CMD_SPA] = int(self.recv(self.LEN_CMD))
                 self.__mode__ = 0
-                print('Read:',self.__cmds__[self.CMD_SPA],'and Mode is now 0.')
+                self.__flag_reply__ = True
+#                print('Read:',self.__cmds__[self.CMD_SPA],'and Mode is now 0.')
             elif self.__mode__ == 2:
                 self.__cmds__[self.CMD_SPB] = int(self.recv(self.LEN_CMD))
                 self.__mode__ = 0
+                self.__flag_reply__ = True
 
     # pull the latest data from the command list
     def read_cmd (self, index):
@@ -84,14 +90,18 @@ class Serial:
     def refresh_reply (self, ra, rb):
         self.__reply__[self.CMD_SPA] = '{:+06}'.format(ra)
         self.__reply__[self.CMD_SPB] = '{:+06}'.format(rb)
+#        print('built:',self.__reply__)
 
     # send a reply to the master
     def send_reply (self):
-        for x in range (len(self.__reply__)):
-            self.send(self.__reply__[x])
-        self.__reply__[self.CMD_ACK] = ' '
+        if self.__flag_reply__:
+            for x in range (len(self.__reply__)):
+                self.send(self.__reply__[x])
+            self.__reply__[self.CMD_ACK] = ' '
+            self.__flag_reply__ = False;
+            print ('replied')
 
     # check whether the shutdown flag is raised
     def should_close (self):
-        return __flag_down__
+        return self.__flag_down__
 
