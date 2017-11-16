@@ -86,11 +86,7 @@ class RS232:
         dat = self.recv()
       # convert it from a list into a number
       if len(val) > 0:
-#        val = int(''.join(map('{}',val)))
-        digits = []
-        for i in range (len(val)):
-          digits.append(val[i].decode())
-        val = int(''.join(digits))
+        val = int(''.join(map(bytes.decode,val)))
       else:
         val = 0
       # store the value in the right place
