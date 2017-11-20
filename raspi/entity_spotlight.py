@@ -42,7 +42,7 @@ class Entity_Spotlight(Entity):
 
   # overrides the teleport_to in Entity
   def teleport_to (self, point):
-    print ("sent to",point.get_x())
+#    print ("sent to",point.get_x())
     self.pos.inst_move_to(point.get_x(), point.get_y())
     self.icon.move_to(point.get_x(), point.get_y())
 

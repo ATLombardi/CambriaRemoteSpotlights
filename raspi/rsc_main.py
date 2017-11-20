@@ -18,8 +18,7 @@ def main ():
 #    ser_b = RS232('/dev/ttyUSB1',115200)
   except:
     print ("Error when trying to connect to serial ports!")
-<<<<<<< HEAD
-=======
+
   print ("done.")
 
   print ("init touch...")
@@ -30,7 +29,7 @@ def main ():
 
   spot_l.go_home()
   spot_r.go_home()
->>>>>>> 47ff271a97738205e85f66bb1a7ae9089d9f3ba4
+
   print ("done.")
 
   print ("init pygame...")
@@ -49,7 +48,7 @@ def main ():
 #  pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,pos=(0,0),button=1))
 #  pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONUP,pos=(0,0),button=1))
 
-  clock = pygame.time.Clock()
+#  clock = pygame.time.Clock()
   print ("done.")
 
   # initialize touch tracking
@@ -103,7 +102,6 @@ def main ():
       pos_l = spot_l.get_location()
       pos_r = spot_r.get_location()
 
-<<<<<<< HEAD
       # find closest touch point to each light
       target_l = touch.find_closest(pos_l.get_x(), pos_l.get_y() )
       target_r = touch.find_closest(pos_r.get_x(), pos_r.get_y() )
@@ -122,7 +120,7 @@ def main ():
       else:
         ser_a.send_command(target_r.get_x(), target_r.get_y())
 #        ser_b.send_command(pos_l.get_x(), pos_l.get_y())
-=======
+
       target_l = touch.find_closest(pos_l.get_x(), pos_l.get_y() )
       target_r = touch.find_closest(pos_r.get_x(), pos_r.get_y() )
 
@@ -152,7 +150,6 @@ def main ():
 #        spot_l.teleport_to(b_point.add(spot_l.get_home()))
         ser_a.send_command(target_r.get_x(), target_r.get_y())
 #        ser_b.send_command(target_l.get_x(), target_l.get_y())
->>>>>>> 47ff271a97738205e85f66bb1a7ae9089d9f3ba4
 
       # actually do rendering
       screen.fill( (255,255,255) )
@@ -171,7 +168,7 @@ def main ():
           should_stop = True
           exit_reason_number = 2
 
-      clock.tick (240)
+#      clock.tick (240)
 
   # handle exits cleanly
   except KeyboardInterrupt:
