@@ -48,3 +48,31 @@ class Transparent_Circle:
     # render it
     s.set_alpha (75)
     display.blit(s, (0, 0) )
+
+class Cross:
+  def __init__ (self, x=0, y=0, r=5):
+    self.pos = Point(x,y)
+    self.radius = r
+
+  def move_to (self, x, y):
+    self.pos.inst_move_to(x,y)
+
+  def set_radius (self, r):
+    self.radius = r
+
+  def draw (self, display):
+    xc = self.pos.get_x()
+    xs = xc - self.radius
+    xe = xc + self.radius
+    yc = self.pos.get_y()
+    ys = yc - self.radius
+    ye = yc + self.radius
+
+    s = pygame.Surface((800,480))
+    s.fill( (0,0,0) )
+    s.set_colorkey( (0,0,0) )
+    # horizontal line
+    pygame.draw.line(s, (255,0,0),(xs,yc),(xe,yc),4)
+    # vertical line
+    pygame.draw.line(s, (255,0,0),(xc,ys),(xc,ye),4)
+    display.blit(s, (0,0) )

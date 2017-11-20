@@ -2,7 +2,7 @@
 ## Implements a "spotlight beam" on screen ##
 
 from entity import *
-from graphics import Transparent_Circle
+from graphics import Transparent_Circle, Cross
 
 SPEED = 1 # used by simulated lights, >1 will vibrate
 
@@ -11,6 +11,7 @@ class Entity_Spotlight(Entity):
     Entity.__init__(self, x=x, y=y)
     self.home = Point(x,y)
     self.icon = Transparent_Circle(x=x, y=y, r=100)
+    self.targ = Cross(x=x, y=y, r=20)
 
   # tells the spotlight to return to the original position
   def go_home (self):
@@ -24,10 +25,20 @@ class Entity_Spotlight(Entity):
   def set_home (self):
     self.home = self.pos
 
+  # sets the target position
+  def set_target (self, point):
+    self.target = point
+
   # draw the spotlight beam on screen
-  def render (self):
+#  def render (self):
     # TODO: put pygame rendering code here
-    pass
+#    pass
+
+  # overrides the teleport_to in Entity
+  def teleport_to (self, point):
+#    print ("sent to ",point.get_x())
+    self.pos.inst_move_to(point.get_x(), point.get_y())
+    self.icon.move_to(point.get_x(), point.get_y())
 
   # overrides the teleport_to in Entity
   def teleport_to (self, point):
@@ -60,4 +71,6 @@ class Entity_Spotlight(Entity):
     self.icon.move_to(self_x, self_y)
 
   def draw (self, display):
+    self.targ.move_to(self.target.get_x(), self.target.get_y())
     self.icon.draw(display)
+    self.targ.draw(display)

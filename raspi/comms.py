@@ -8,11 +8,11 @@ class RS232:
   # track what we're processing inputs for
   __state__  = 0
 
+  # track whether we should send a reply
+  __flag_reply__ = True
+
   # stores which side the pyboard is on (L or R)
   __side__   = '?'
-
-  # tracks whether we should send a reply
-  __flag_reply__ = True
 
   # buffer for incoming data
   __inbox__  = [' ','A','+000','B','+000']
@@ -22,8 +22,11 @@ class RS232:
   CMD_SPB = 4
   CMD_ACK = 0
 
+  # regex representing +,-, and 0-9
+  VALUE = re.compile(b"^[+\-0-9]+$")
+
   # expected length of command data
-  LEN_CMD = 4
+  LEN_CMD = 3
 
   # sets up a serial connection on PORT at BAUD rate
   def __init__ (self, port, baud,
@@ -33,6 +36,7 @@ class RS232:
   ):
     # create and activate a serial port object
     self.ser = serial.Serial(port,baud,
+      timeout=None,
       parity=parity,
       stopbits=stop,
       bytesize=bytesize
@@ -56,10 +60,10 @@ class RS232:
 
   # check the incoming serial stream
   def update_inbox (self):
-#    print ('updating inbox...')
+    # if we're ready to receive data from either encoder
     if self.is_waiting() and self.__state__ == 0:
       dat = self.recv()
-      print ('dat=',dat)
+   #   print ('dat=',dat)
       if dat == b'A' or dat == b'a':
         # we're writing this data to buffer slot A
         self.__state__ = 1
@@ -78,10 +82,12 @@ class RS232:
         self.__side__ = ' '
         print ("Warning: Pyboard orientation is unknown.")
 
+    # if we're reading into a buffer slot and we've received enough data
+    elif self.is_waiting() > self.LEN_CMD-1:
       dat = self.recv()
       val = []
       # regex check for +,-, or digits
-      while ( re.match(b"^[+\-0-9]+$",dat) and self.is_waiting() ):
+      while self.VALUE.match(dat) and self.is_waiting():
         val.append(dat)
         dat = self.recv()
       # convert it from a list into a number
@@ -89,7 +95,6 @@ class RS232:
         val = int(''.join(map(bytes.decode,val)))
       else:
         val = 0
-      # store the value in the right place
       if self.__state__ == 1:
         self.__inbox__[self.CMD_SPA] = val
         self.__state__ = 0
@@ -103,13 +108,15 @@ class RS232:
   def read_inbox (self, index):
     if index == self.CMD_SPA:
       ret = self.__inbox__[self.CMD_SPA]
+      ret = self.enc_to_coord(int(ret))
     elif index == self.CMD_SPB:
       ret = self.__inbox__[self.CMD_SPB]
+      ret = self.enc_to_coord(int(ret))
     elif index == self.CMD_ACK:
       ret = self.__inbox__[self.CMD_ACK]
     else:
-      ret = '0'
-    return int(ret)
+      ret = 0
+    return ret
 
   # translate screen coordinates into encoder counts
   # -- TO DO --
@@ -120,6 +127,17 @@ class RS232:
       ret = coord # DO MATH HERE
     else:
       ret = coord
+    return ret
+
+  # translate encoder counts into screen coordinates
+  # -- TO DO --
+  def enc_to_coord (self, enc):
+    if self.__side__ == 'L':
+      ret = enc
+    elif self.__side__ == 'R':
+      ret = enc
+    else:
+      ret = enc
     return ret
 
   # send a new target position to the pyboard
@@ -136,8 +154,7 @@ class RS232:
 
   # simple wrapper
   def recv (self, count=1):
-    ch = self.ser.read(count)
-    return ch
+    return self.ser.read(count)
 
   # simple wrapper
   def send (self, data):
@@ -146,11 +163,3 @@ class RS232:
   # returns the number of characters waiting
   def is_waiting (self):
     return self.ser.inWaiting()
-
-def test ():
-  from time import sleep
-  mail = RS232('/dev/ttyUSB0',115200)
-  while True:
-    mail.update_inbox()
-    print (mail.read_inbox(mail.CMD_SPA) )
-    sleep (0.01)
