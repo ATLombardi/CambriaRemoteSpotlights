@@ -23,7 +23,7 @@ class RS232:
   CMD_ACK = 0
 
   # regex representing +,-, and 0-9
-  VALUE = re.compile(b"^[+\-0-9]+$")
+  VALUE = re.compile(b"[+\-0-9]+")
 
   # expected length of command data
   LEN_CMD = 3
@@ -145,7 +145,7 @@ class RS232:
     if self.__flag_reply__:
       cmd_a = self.coord_to_enc (pos_a)
       cmd_b = self.coord_to_enc (pos_b)
-      self.send ( 'A'+'{:+04}'.format(cmd_a) + 'B'+'{:+04}'.format(cmd_b) )
+      self.send ( 'A'+'{:+04}'.format(cmd_a)+','+'B'+'{:+04}'.format(cmd_b)+'\n' )
       self.__flag_reply__ = False
 
   # which side the attached pyboard is on (L or R)
