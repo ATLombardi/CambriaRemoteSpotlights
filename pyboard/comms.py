@@ -3,6 +3,7 @@
 # Handles sending / recieving data with the Raspberry Pi over RS-232.
 
 from pyb import UART
+import re # regex library
 
 class Serial:
     # the UART object this class uses
@@ -15,10 +16,14 @@ class Serial:
     __cmds__  = [0,0,0,0,0]
 
     # reply data array
-    __reply__ = ['','A','000','B','000']
+    __reply__ = ['','A','000',',','B','000','\n']
 
     # expected length of command data
     LEN_CMD = 4
+
+    # correct command formatting
+    # allows 0-9, +, -, comma, and newline
+    FORM_CMD = re.compile(b'[+\-0-9,\\n]+')
 
     # command index 'constants'
     CMD_SPA = 2
@@ -32,7 +37,7 @@ class Serial:
     __flag_down__ = False
 
     # data-input mode tracking
-    __mode__ = 0
+    __state__ = 0
 
     # create a new Serial object
     def __init__ (self, bus_num, baud, b=8, p=None, s=1):
@@ -54,26 +59,54 @@ class Serial:
 
     # refresh the local command cache
     def update_cmds (self):
-        if self.is_waiting() and self.__mode__ == 0:
+        # don't do anything if there's nothing to be read
+        if self.is_waiting():
+            # read in an initial character
             dat = self.recv()
-            if dat == b'A' or dat == b'a':
-                self.__mode__ = 1
-#                print('Mode is now 1')
-            elif dat == b'B' or dat == b'b':
-                self.__mode__ = 2
-            elif dat == b'?':
-                self.__reply__[self.CMD_ACK] = self.side_tag
-            elif dat == b'K':
-                self.__flag_down__ = True
-        elif self.is_waiting() > self.LEN_CMD-1:
-            if self.__mode__ == 1:
-                self.__cmds__[self.CMD_SPA] = int(self.recv(self.LEN_CMD))
-                self.__mode__ = 0
-                self.__flag_reply__ = True
-#                print('Read:',self.__cmds__[self.CMD_SPA],'and Mode is now 0.')
-            elif self.__mode__ == 2:
-                self.__cmds__[self.CMD_SPB] = int(self.recv(self.LEN_CMD))
-                self.__mode__ = 0
+            # state 0 is 'waiting for command'
+            if self.__state__ == 0:
+                if dat == b'A' or dat == b'a': # read into cmd A
+                    self.__state__ = 1
+                elif dat == b'B' or dat == b'b': # read into cmd B
+                    self.__state__ = 2
+                elif dat == b'?': # identity request
+                    self.__reply__[self.CMD_ACK] = self.side_tag
+                elif dat == b'K': # shutdown alert
+                    self.__flag_down__ = True
+
+            # state 1 and 2 are 'reading in numbers'
+            else:
+                val = []
+                should_check = True
+                # until we see a valid terminating character, stay here
+                # TODO - possibly rework to avoid Blocking behavior
+                while should_check:
+                    if self.FORM_CMD.match(dat): # valid digit, keep
+                        val.append(dat)
+                        dat = self.recv()
+                    elif dat == b',' or dat == b'\n': # terminating chars
+                        should_check = False
+
+                # now parse the array into a number
+                if len(val) > 0:
+                    try:
+                        # make an int from the combined decoded characters in val
+                        val = int(''.join(map(bytes.decode,val)))
+                    except ValueError:
+                        print ('Error decoding',val)
+                        val = 0
+                else:
+                    val = 0
+
+                # store the successful conversion into the proper location
+                if self.__state__ == 1:
+                    self.__cmds__[self.CMD_SPA] = val
+                elif self.__state__ == 2:
+                    self.__cmds__[self.CMD_SPB] = val
+
+                # return to state zero
+                self.__state__ = 0
+                # indicate that we can reply now
                 self.__flag_reply__ = True
 
     # pull the latest data from the command list
@@ -115,6 +148,7 @@ def ser_test ():
     mail.update_cmds()
     x = mail.read_cmd(mail.CMD_SPA)
     y = mail.read_cmd(mail.CMD_SPB)
+    print('x:',x,', y:',y)
     mail.refresh_reply(x,y)
     mail.send_reply()
     sleep_us(10)

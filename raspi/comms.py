@@ -60,48 +60,61 @@ class RS232:
 
   # check the incoming serial stream
   def update_inbox (self):
-    # if we're ready to receive data from either encoder
-    if self.is_waiting() and self.__state__ == 0:
+    if self.is_waiting():
+      # read in an initial character
       dat = self.recv()
-   #   print ('dat=',dat)
-      if dat == b'A' or dat == b'a':
-        # we're writing this data to buffer slot A
-        self.__state__ = 1
-#        print('Mode is now 1')
-      elif dat == b'B' or dat == b'b':
-        # we're writing this data to buffer slot B
-        self.__state__ = 2
-      elif dat == b'L':
-        # the attached pyboard has reported it's on the Left
-        self.__side__ = 'L'
-      elif dat == b'R':
-        # the attached pyboard has reported it's on the right
-        self.__side__ = 'R'
-      elif dat == b'!':
-        # the attached pyboard has no idea which side it is on
-        self.__side__ = ' '
-        print ("Warning: Pyboard orientation is unknown.")
+#      print ('dat=',dat)
+      if self.__state__ == 0:
+        if dat == b'A' or dat == b'a':
+          # we're writing this data to buffer slot A
+          self.__state__ = 1
+#          print('Mode is now 1')
+        elif dat == b'B' or dat == b'b':
+          # we're writing this data to buffer slot B
+          self.__state__ = 2
+        elif dat == b'L':
+          # the attached pyboard has reported it's on the Left
+          self.__side__ = 'L'
+        elif dat == b'R':
+          # the attached pyboard has reported it's on the right
+          self.__side__ = 'R'
+        elif dat == b'!':
+          # the attached pyboard has no idea which side it is on
+          self.__side__ = ' '
+          print ("Warning: Pyboard orientation is unknown.")
 
-    # if we're reading into a buffer slot and we've received enough data
-    elif self.is_waiting() > self.LEN_CMD-1:
-      dat = self.recv()
-      val = []
-      # regex check for +,-, or digits
-      while self.VALUE.match(dat) and self.is_waiting():
-        val.append(dat)
-        dat = self.recv()
-      # convert it from a list into a number
-      if len(val) > 0:
-        val = int(''.join(map(bytes.decode,val)))
+      # states 1 and 2 are 'read in numbers'
       else:
-        val = 0
-      if self.__state__ == 1:
-        self.__inbox__[self.CMD_SPA] = val
+        val = []
+        should_check = True
+        # until we see a valid terminating character, stay here
+        # TODO = possibly rework to avoid Blocking behavior
+        while should_check:
+          if self.VALUE.match(dat): # valid digit
+            val.append(dat)
+            dat = self.recv()
+          elif dat == b',' or dat == b'\n': # terminating chars
+            should_check = False
+
+        # convert it from a list into a number
+        if len(val) > 0:
+          try:
+            val = int(''.join(map(bytes.decode,val)))
+          except ValueError:
+            print ('Error decoding',val)
+            val = 0
+        else:
+          val = 0
+
+        # store the result of the conversion
+        if self.__state__ == 1:
+          self.__inbox__[self.CMD_SPA] = val
+        elif self.__state__ == 2:
+          self.__inbox__[self.CMD_SPB] = val
+
+        # return to state 0
         self.__state__ = 0
-        self.__flag_reply__ = True
-      elif self.__state__ == 2:
-        self.__inbox__[self.CMD_SPB] = val
-        self.__state__ = 0
+        # indicate that we can reply now
         self.__flag_reply__ = True
 
   # return a piece of data from the buffer
