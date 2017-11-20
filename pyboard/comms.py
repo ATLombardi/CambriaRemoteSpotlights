@@ -99,9 +99,22 @@ class Serial:
                 self.send(self.__reply__[x])
             self.__reply__[self.CMD_ACK] = ' '
             self.__flag_reply__ = False;
-            print ('replied')
+#            print ('replied')
 
     # check whether the shutdown flag is raised
     def should_close (self):
         return self.__flag_down__
 
+# for testing serial communication
+def ser_test ():
+  from time import sleep_us
+  mail = Serial(6,115200)
+  x = 0
+  y = 0
+  while True:
+    mail.update_cmds()
+    x = mail.read_cmd(mail.CMD_SPA)
+    y = mail.read_cmd(mail.CMD_SPB)
+    mail.refresh_reply(x,y)
+    mail.send_reply()
+    sleep_us(10)
