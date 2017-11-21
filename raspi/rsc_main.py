@@ -30,6 +30,9 @@ def main ():
   spot_l.go_home()
   spot_r.go_home()
 
+  target_l = spot_l.get_target()
+  target_r = spot_r.get_target()
+
   print ("done.")
 
   print ("init pygame...")
@@ -94,25 +97,25 @@ def main ():
       pos_r = spot_r.get_location()
 
       # find closest touch point to each light
-      target_l = touch.find_closest(pos_l.get_x(),pos_l.get_y(), fail_point=spot_l.get_target() )
-      target_r = touch.find_closest(pos_r.get_x(),pos_r.get_y(), fail_point=spot_r.get_target() )
+      target_l = touch.find_closest(pos_l.get_x(),pos_l.get_y(), fail_point=target_l )
+      target_r = touch.find_closest(pos_r.get_x(),pos_r.get_y(), fail_point=target_r )
 
       # set the spotlights to move towards the closest touch points
       spot_l.set_target(target_l)
       spot_r.set_target(target_r)
 
       # convert to relative coords
-      target_l = target_l.subtract(spot_l.get_home())
-      target_r = target_r.subtract(spot_r.get_home())
+      rel_l = target_l.subtract(spot_l.get_home())
+      rel_r = target_r.subtract(spot_r.get_home())
 
 #      print ('t: ',target_r.get_x(), ',', target_r.get_y())
 
       if ser_a.get_side() == 'L':
-        ser_a.send_command(target_l.get_x(), target_l.get_y())
-#        ser_b.send_command(pos_r.get_x(), pos_r.get_y())
+        ser_a.send_command(rel_l.get_x(), rel_l.get_y())
+#        ser_b.send_command(rel_r.get_x(), rel_r.get_y())
       else:
-        ser_a.send_command(target_r.get_x(), target_r.get_y())
-#        ser_b.send_command(pos_l.get_x(), pos_l.get_y())
+        ser_a.send_command(rel_r.get_x(), rel_r.get_y())
+#        ser_b.send_command(rel_l.get_x(), rel_l.get_y())
 
       # actually do rendering
       screen.fill( (255,255,255) )
