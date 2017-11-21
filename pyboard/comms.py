@@ -13,7 +13,7 @@ class Serial:
     __flag_reply__ = False
 
     # command data array
-    __cmds__  = [0,0,0,0,0]
+    __cmds__  = [0,0,0,0,0,0]
 
     # reply data array
     __reply__ = ['','A','000',',','B','000','\n']
@@ -21,13 +21,13 @@ class Serial:
     # expected length of command data
     LEN_CMD = 4
 
-    # correct command formatting
-    # allows 0-9, +, -, comma, and newline
-    FORM_CMD = re.compile(b'[+\-0-9,\\n]+')
+    # correct command number formatting
+    # allows + OR - OR 0-9
+    FORM_CMD = re.compile(b'\+|\-|\d')
 
     # command index 'constants'
     CMD_SPA = 2
-    CMD_SPB = 4
+    CMD_SPB = 5
     CMD_ACK = 0
 
     # stores which side this unit is on (R or L)
@@ -67,8 +67,10 @@ class Serial:
             if self.__state__ == 0:
                 if dat == b'A' or dat == b'a': # read into cmd A
                     self.__state__ = 1
+                    print('moving to state A')
                 elif dat == b'B' or dat == b'b': # read into cmd B
                     self.__state__ = 2
+                    print('moving to state B')
                 elif dat == b'?': # identity request
                     self.__reply__[self.CMD_ACK] = self.side_tag
                 elif dat == b'K': # shutdown alert
@@ -81,11 +83,14 @@ class Serial:
                 # until we see a valid terminating character, stay here
                 # TODO - possibly rework to avoid Blocking behavior
                 while should_check:
-                    if self.FORM_CMD.match(dat): # valid digit, keep
-                        val.append(dat)
+                    if self.is_waiting():
                         dat = self.recv()
-                    elif dat == b',' or dat == b'\n': # terminating chars
-                        should_check = False
+                        print(dat)
+                        if self.FORM_CMD.match(dat): # valid digit, keep
+                            val.append(dat)
+                            print('->')
+                        elif dat == b',' or dat == b'\n': # terminating chars
+                            should_check = False
 
                 # now parse the array into a number
                 if len(val) > 0:
@@ -101,8 +106,10 @@ class Serial:
                 # store the successful conversion into the proper location
                 if self.__state__ == 1:
                     self.__cmds__[self.CMD_SPA] = val
+                    print ('A is now',val)
                 elif self.__state__ == 2:
                     self.__cmds__[self.CMD_SPB] = val
+                    print ('B is now',val)
 
                 # return to state zero
                 self.__state__ = 0
@@ -146,9 +153,10 @@ def ser_test ():
   y = 0
   while True:
     mail.update_cmds()
+    mail.update_cmds()
     x = mail.read_cmd(mail.CMD_SPA)
     y = mail.read_cmd(mail.CMD_SPB)
-    print('x:',x,', y:',y)
+#    print('x:',x,', y:',y)
     mail.refresh_reply(x,y)
     mail.send_reply()
     sleep_us(10)

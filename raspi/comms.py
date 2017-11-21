@@ -22,8 +22,8 @@ class RS232:
   CMD_SPB = 4
   CMD_ACK = 0
 
-  # regex representing +,-, and 0-9
-  VALUE = re.compile(b"[+\-0-9]+")
+  # regex representing the characters + OR - OR 0-9
+  VALUE = re.compile(b"+|\-|\d+")
 
   # expected length of command data
   LEN_CMD = 3
