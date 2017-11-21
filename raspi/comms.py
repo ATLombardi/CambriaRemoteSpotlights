@@ -23,7 +23,7 @@ class RS232:
   CMD_ACK = 0
 
   # regex representing the characters + OR - OR 0-9
-  VALUE = re.compile(b"+|\-|\d+")
+  VALUE = re.compile(b"\+|\-|\d")
 
   # expected length of command data
   LEN_CMD = 3
@@ -93,7 +93,7 @@ class RS232:
           if self.VALUE.match(dat): # valid digit
             val.append(dat)
             dat = self.recv()
-          elif dat == b',' or dat == b'\n': # terminating chars
+          elif dat == b',': # terminating character
             should_check = False
 
         # convert it from a list into a number
@@ -158,7 +158,7 @@ class RS232:
     if self.__flag_reply__:
       cmd_a = self.coord_to_enc (pos_a)
       cmd_b = self.coord_to_enc (pos_b)
-      self.send ( 'A'+'{:+04}'.format(cmd_a)+','+'B'+'{:+04}'.format(cmd_b)+'\n' )
+      self.send ( 'A'+'{:+04}'.format(cmd_a)+','+'B'+'{:+04}'.format(cmd_b)+',\n' )
       self.__flag_reply__ = False
 
   # which side the attached pyboard is on (L or R)

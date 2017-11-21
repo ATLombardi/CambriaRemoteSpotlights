@@ -83,6 +83,7 @@ def main ():
         ser_a.read_inbox(ser_a.CMD_SPA),
         ser_a.read_inbox(ser_a.CMD_SPB)
       )
+#      print (a_point.get_x(), ',', a_point.get_y())
 
 #      b_point = Point (
 #        ser_b.read_inbox(ser_b.CMD_SPA),
@@ -113,6 +114,8 @@ def main ():
       # convert to relative coords
       target_l = target_l.subtract(spot_l.get_home())
       target_r = target_r.subtract(spot_r.get_home())
+
+#      print ('t: ',target_r.get_x(), ',', target_r.get_y())
 
       if ser_a.get_side() == 'L':
         ser_a.send_command(target_l.get_x(), target_l.get_y())
