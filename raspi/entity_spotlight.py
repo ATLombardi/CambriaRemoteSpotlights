@@ -9,7 +9,8 @@ SPEED = 1 # used by simulated lights, >1 will vibrate
 class Entity_Spotlight(Entity):
   def __init__(self, x=0, y=0):
     Entity.__init__(self, x=x, y=y)
-    self.home = Point(x,y)
+    self.home   = Point(x,y)
+    self.target = Point(x,y)
     self.icon = Transparent_Circle(x=x, y=y, r=100)
     self.targ = Cross(x=x, y=y, r=20)
 
@@ -28,6 +29,9 @@ class Entity_Spotlight(Entity):
   # sets the target position
   def set_target (self, point):
     self.target = point
+
+  def get_target (self):
+    return self.target
 
   # draw the spotlight beam on screen
 #  def render (self):

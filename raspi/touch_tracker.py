@@ -11,18 +11,22 @@ class Tracker:
   points = [ Point(-1,-1) for p in range(10) ]
 
   # returns the closest point to the supplied coords
-  def find_closest (self, x, y):
+  def find_closest (self, x, y, fail_point=None):
     #print ("searching around ",x,",",y)
-    temp   = Point (x,y)
-    result = Point (x,y)
-    dist = 100000
+    temp    = Point (x,y)
+    result  = Point (x,y)
+    dist    = 100000
+    succeed = False
     for p in self.points:
       latest = temp.dist2(p)
       if 0 < latest < dist and p.get_x() > 0 and p.get_y() > 0:
         dist = latest
         result = p
+        succeed = True
         if debug:
           print ("found: ",result.get_x(), ",", result.get_y())
+    if not succeed and fail_point != None:
+      result = fail_point
     return result
 
   # called when a touch starts

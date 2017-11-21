@@ -139,7 +139,7 @@ class RS232:
     elif self.__side__ == 'R': # right-side spotlight
       ret = coord # DO MATH HERE
     else:
-      ret = coord
+      ret = coord*5
     return ret
 
   # translate encoder counts into screen coordinates
@@ -150,7 +150,7 @@ class RS232:
     elif self.__side__ == 'R':
       ret = enc
     else:
-      ret = enc
+      ret = int(enc/5)
     return ret
 
   # send a new target position to the pyboard
