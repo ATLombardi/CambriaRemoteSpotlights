@@ -30,7 +30,7 @@ class Point:
     return Point(xs,ys)
 
   # sets the Point's new location instantly
-  def inst_move_to (self, x, y):
+  def move_to (self, x, y):
     self.x = x
     self.y = y
 
