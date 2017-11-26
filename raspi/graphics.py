@@ -29,7 +29,7 @@ class Transparent_Circle:
     self.radius = r
 
   def move_to (self, x, y):
-    self.pos.inst_move_to(x,y)
+    self.pos.move_to(x,y)
 
   def set_radius (r):
     self.radius = r
@@ -55,7 +55,7 @@ class Cross:
     self.radius = r
 
   def move_to (self, x, y):
-    self.pos.inst_move_to(x,y)
+    self.pos.move_to(x,y)
 
   def set_radius (self, r):
     self.radius = r

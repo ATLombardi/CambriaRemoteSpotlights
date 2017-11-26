@@ -164,6 +164,8 @@ def main ():
   finally:
     # turn off these events just in case
     touch.active(False)
+    a_monitor_thread.terminate()
+#    b_monitor_thread.terminate()
     print ("Exit reason: ", exit_reason_number)
     # and finally, bail out
     exit (exit_reason_number)

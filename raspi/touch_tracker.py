@@ -36,21 +36,21 @@ class Tracker:
     if debug:
       print ("pressed",touch.slot, ":", touch.x, ",", touch.y)
     # save the data from this touch point
-    self.points[touch.slot].inst_move_to(touch.x, touch.y)
+    self.points[touch.slot].move_to(touch.x, touch.y)
 
   # called when a touch ends
   def __touch_lift (self, touch):
     if debug:
       print ("released",touch.slot, ":", touch.x, ",", touch.y)
     # we'll use negative coords to mark this point as invalid
-    self.points[touch.slot].inst_move_to(-1, -1)
+    self.points[touch.slot].move_to(-1, -1)
 
   # called when a touch moves
   def __touch_move (self, touch):
     if debug:
       print ("moved",touch.slot, ":", touch.x, ",", touch.y)
     # update the coords of the point
-    self.points[touch.slot].inst_move_to(touch.x, touch.y)
+    self.points[touch.slot].move_to(touch.x, touch.y)
 
   # what to do when an event happens
   def __touch_handler (self, event, touch):
