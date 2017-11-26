@@ -8,7 +8,24 @@ from comms import *
 
 import pygame
 import sys
+from threading import Thread
 
+# continually updates a serial inbox. Don't use in the main thread!
+class MailboxMonitor:
+  def __init__ (self, mailbox):
+    self.__running = True
+    self.m = mailbox
+
+  def terminate (self):
+    self.__running = False
+
+  def run (self):
+    while self.__running:
+      self.m.update_inbox()
+# /MailboxMonitor
+
+
+# The main program that will be run on the Raspberry Pi
 def main ():
   print ("Starting up...")
 
@@ -33,6 +50,12 @@ def main ():
   target_l = spot_l.get_target()
   target_r = spot_r.get_target()
 
+  a_monitor = MailboxMonitor(ser_a)
+#  b_monitor = MailboxMonitor(ser_b)
+
+  a_monitor_thread = Thread(target=a_monitor.run)
+#  b_monitor_thread = Thread(target=b_monitor.run)
+
   print ("done.")
 
   print ("init pygame...")
@@ -48,9 +71,6 @@ def main ():
   bg = Background('/home/pi/Pictures/stage.jpg', (0,0) )
   pygame.display.flip()
 
-#  pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONDOWN,pos=(0,0),button=1))
-#  pygame.event.post(pygame.event.Event(pygame.MOUSEBUTTONUP,pos=(0,0),button=1))
-
 #  clock = pygame.time.Clock()
   print ("done.")
 
@@ -59,6 +79,10 @@ def main ():
   # something to report when we stop
   exit_reason_number = -1
 
+  # inboxes will be updated in separate threads
+  a_monitor_thread.start()
+#  b_monitor_thread.start()
+
   # turn on touch events now, we are ready
   touch.active (True)
 
@@ -66,10 +90,6 @@ def main ():
   try:
     while not should_stop:
       delta = 0.1 # TODO: get an actual clock check here
-
-      # see if we got an update from the pyboards
-      ser_a.update_inbox()
-#      ser_b.update_inbox()
 
       # build a Point where the light says it is
       a_point = Point (
