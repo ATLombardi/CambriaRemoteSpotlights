@@ -10,11 +10,11 @@ class Entity:
 
   # set the target for motion updates
   def set_target (self, point):
-    self.target.inst_move_to(point.get_x(), point.get_y())
+    self.target.move_to(point.get_x(), point.get_y())
 
   # set this entity to a location immediately
   def teleport_to (self, point):
-    self.pos.inst_move_to(point.get_x(), point.get_y())
+    self.pos.move_to(point.get_x(), point.get_y())
 
   def get_location (self):
     return self.pos
