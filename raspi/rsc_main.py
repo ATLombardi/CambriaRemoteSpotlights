@@ -162,10 +162,11 @@ def main ():
   except Exception as e:
     print (e)
   finally:
-    # turn off these events just in case
+    # turn off these events and release the threads
     touch.active(False)
     a_monitor.terminate()
 #    b_monitor.terminate()
+    Thread.join()
     print ("Exit reason: ", exit_reason_number)
     # and finally, bail out
     exit (exit_reason_number)
