@@ -166,7 +166,8 @@ def main ():
     touch.active(False)
     a_monitor.terminate()
 #    b_monitor.terminate()
-    Thread.join()
+    a_monitor_thread.join()
+#    b_monitor_thread.join()
     print ("Exit reason: ", exit_reason_number)
     # and finally, bail out
     exit (exit_reason_number)
