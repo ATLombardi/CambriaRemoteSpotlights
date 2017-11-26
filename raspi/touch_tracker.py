@@ -22,13 +22,13 @@ class Tracker:
       latest = temp.dist2(p)
       if 0 < latest < dist and p.get_x() > 0 and p.get_y() > 0:
         dist = latest
-        result = p
+        result.move_to(p.get_x(), p.get_y())
         succeed = True
         if debug:
           print ("found: ",result.get_x(), ",", result.get_y())
     if not succeed and fail_point != None and fail_point.get_x()>0:
 #      print ('search failed, going to',fail_point.get_x(),',',fail_point.get_y())
-      result = fail_point
+      result.move_to(fail_point.get_x(), fail_point.get_y())
     return result
 
   # called when a touch starts
