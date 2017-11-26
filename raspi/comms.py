@@ -60,7 +60,7 @@ class RS232:
 
   # check the incoming serial stream
   def update_inbox (self):
-    if self.is_waiting():
+    if True:#self.is_waiting():
       # read in an initial character
       dat = self.recv()
 #      print ('dat=',dat)
