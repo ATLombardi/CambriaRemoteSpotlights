@@ -76,6 +76,7 @@ class Serial:
                     self.__reply__[self.CMD_ACK] = self.side_tag
                 elif dat == b'K': # shutdown alert
                     self.__flag_down__ = True
+                    self.send('Z') # we've been told to shut down, reply with rubbish
 
             # state 1 and 2 are 'reading in numbers'
             else:

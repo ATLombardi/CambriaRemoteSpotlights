@@ -13,7 +13,7 @@ class Controller:
         self.set_saturation(bottom,top)
         self.err_sum = 0
         self.err_win = 0
-        self.err_old = 0
+        self.act_old = 0
 
     # iterate on the control loop. This requires a setpoint goal,
     # an 'actual' reading from the targetted system, and the time
@@ -28,7 +28,7 @@ class Controller:
         self.err_sum += (err * self.I) - (self.err_win * self.windup)
 
         # derivative action
-        err_der = (err - self.err_old) * self.D / delta_t
+        err_der = (self.act_old - actual) * self.D / delta_t
         self.err_old = err
 
         # evaluate total action

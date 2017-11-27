@@ -31,8 +31,8 @@ def main ():
     motor_b = elechouse.Driver('Y12','Y11','Y10','Y9')
 
     # PID controllers
-    control_a = pid.Controller(P=0.1, I=0.0001, D=0.001)
-    control_b = pid.Controller(P=0.1, I=0.0001)
+    control_a = pid.Controller(P=5, I=0.0001, D=0)
+    control_b = pid.Controller(P=1)
 
     motor_a.enable()
     motor_b.enable()
