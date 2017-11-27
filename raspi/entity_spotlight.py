@@ -33,14 +33,9 @@ class Entity_Spotlight(Entity):
   def get_target (self):
     return self.target
 
-  # overrides the teleport_to in Entity
-  def teleport_to (self, point):
+  # overrides the move_to in Entity
+  def move_to (self, point):
 #    print ("sent to ",point.get_x())
-    self.pos.move_to(point.get_x(), point.get_y())
-
-  # overrides the teleport_to in Entity
-  def teleport_to (self, point):
-#    print ("sent to",point.get_x())
     self.pos.move_to(point.get_x(), point.get_y())
 
   # updates the spotlight's beam on screen

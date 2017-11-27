@@ -13,7 +13,7 @@ class Entity:
     self.target.move_to(point.get_x(), point.get_y())
 
   # set this entity to a location immediately
-  def teleport_to (self, point):
+  def move_to (self, point):
     self.pos.move_to(point.get_x(), point.get_y())
 
   def get_location (self):

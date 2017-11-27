@@ -117,11 +117,11 @@ def main ():
       # if spotlight A is on the left
       if ser_a.get_side() == 'L':
         # get spotlight positions in relative, convert to abs coords
-        spot_l.teleport_to(a_point.add(spot_l.get_home()))
-#        spot_r.teleport_to(b_point.add(spot_r.get_home()))
+        spot_l.move_to(a_point.add(spot_l.get_home()))
+#        spot_r.move_to(b_point.add(spot_r.get_home()))
       else:
-        spot_r.teleport_to(a_point.add(spot_r.get_home()))
-#        spot_l.teleport_to(b_point.add(spot_r.get_home()))
+        spot_r.move_to(a_point.add(spot_r.get_home()))
+#        spot_l.move_to(b_point.add(spot_r.get_home()))
 
       # get current location of each light
       pos_l = spot_l.get_location()
