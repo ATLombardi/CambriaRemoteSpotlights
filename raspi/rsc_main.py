@@ -10,6 +10,8 @@ from comms import *
 import pygame                # for rendering
 from threading import Thread # for the serial comms
 
+# this defines how tall the on-screen buttons are
+BUTTON_HEIGHT = 50
 
 # continually updates a serial inbox. Don't use in the main thread!
 class MailboxMonitor:
@@ -80,9 +82,16 @@ def main ():
   screen = pygame.display.set_mode( (0,0), pygame.NOFRAME)
 #  pygame.mouse.set_visible(False)
   pygame.display.set_caption('Spotlight Controls')
-  bg = Background('/home/pi/Pictures/stage.jpg', (0,0) )
+  bg = Background('/home/pi/Pictures/stage.jpg',
+    (0,BUTTON_HEIGHT), scale=(window_w,window_h-BUTTON_HEIGHT)
+  )
   # initial render pass to show the background image
   pygame.display.flip()
+
+  # build a couple of buttons: left and right spotlight toggles, and exit
+  button_left  = Rectangle(  0,0, 200,BUTTON_HEIGHT)
+  button_right = Rectangle(200,0, 200,BUTTON_HEIGHT)
+  button_exit  = Rectangle(window_w-200,0, 200,BUTTON_HEIGHT)
 
 #  clock = pygame.time.Clock()
   print ("done.") # with pygame/render stuff

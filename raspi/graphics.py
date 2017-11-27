@@ -12,12 +12,12 @@ import pygame.draw
 class Background (pygame.sprite.Sprite):
 
   # create a background image using Background("bg.jpg", [0,0])
-  def __init__(self, image_file, coords):
+  def __init__(self, image_file, coords, scale=(800,480)):
     # call the parent's initialization
     pygame.sprite.Sprite.__init__(self)
     # load the image
     self.image = pygame.image.load(image_file)
-    self.image = pygame.transform.scale(self.image, (800,480) )
+    self.image = pygame.transform.scale(self.image, scale )
     # set the image's coordinates on screen
     self.rect = self.image.get_rect()
     self.rect.left, self.rect.top = coords
@@ -81,7 +81,7 @@ class Cross:
     display.blit(s, (0,0) )
 
 class Rectangle:
-  def __init__ (self, x,y,w,h):
+  def __init__ (self, x,y,w,h, text=None, color=(255,255,255) ):
     self.pos = Point(x,y)
     self.width  = w
     self.height = h
@@ -105,5 +105,5 @@ class Rectangle:
     s = pygame.Surface((800,480))
     s.fill( (0,0,0) )
     s.set_colorkey( (0,0,0) )
-    pygame.draw.rect(s, (255,255,255), (self.pos.get_x(),self.pos.get_y(),self.width,self.height) )
+    pygame.draw.rect(s, color, (self.pos.get_x(),self.pos.get_y(),self.width,self.height) )
     display.blit(s, (0,0) )
