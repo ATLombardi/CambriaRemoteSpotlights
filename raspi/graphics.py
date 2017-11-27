@@ -1,3 +1,6 @@
+## graphics.py ##
+## a few screen rendering-related classes ##
+
 from geom import Point
 
 from pygame import Surface
@@ -75,4 +78,32 @@ class Cross:
     pygame.draw.line(s, (255,0,0),(xs,yc),(xe,yc),4)
     # vertical line
     pygame.draw.line(s, (255,0,0),(xc,ys),(xc,ye),4)
+    display.blit(s, (0,0) )
+
+class Rectangle:
+  def __init__ (self, x,y,w,h):
+    self.pos = Point(x,y)
+    self.width  = w
+    self.height = h
+
+  def move_to (self, x, y):
+    self.pos.move_to(x,y)
+
+  def get_width (self):
+    return self.width
+
+  def set_width (self, w):
+    self.width = w
+
+  def set_height (self, h):
+    self.height = h
+
+  def get_height (self):
+    return self.height
+
+  def draw (self, display):
+    s = pygame.Surface((800,480))
+    s.fill( (0,0,0) )
+    s.set_colorkey( (0,0,0) )
+    pygame.draw.rect(s, (255,255,255), (self.pos.get_x(),self.pos.get_y(),self.width,self.height) )
     display.blit(s, (0,0) )
