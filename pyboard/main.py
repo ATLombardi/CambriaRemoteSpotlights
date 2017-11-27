@@ -3,10 +3,10 @@ import pid
 import comms
 import sensors
 
-from time import sleep_us
+import time
 
 # --"constants"--
-LOOP_DELAY = 10 # us
+#LOOP_DELAY = 10 # us
 SER_BUS    = 6
 SER_BAUD   = 115200
 
@@ -31,8 +31,8 @@ def main ():
     motor_b = elechouse.Driver('Y12','Y11','Y10','Y9')
 
     # PID controllers
-    control_a = pid.Controller(P=1)
-    control_b = pid.Controller(P=1)
+    control_a = pid.Controller(P=0.1, I=0.0001, D=0.001)
+    control_b = pid.Controller(P=0.1, I=0.0001)
 
     motor_a.enable()
     motor_b.enable()
@@ -42,8 +42,18 @@ def main ():
     encA.Zero()
     encB.Zero()
 
+    # note the time
+    last_time = time.ticks_us()
+    # make this exist, for later use
+    this_time = last_time
+
     # -- Enter Main Loop --
     while not ser.should_close():
+        # determine loop speed
+        this_time = time.ticks_us()
+        del_time  = time.ticks_diff(this_time, last_time)
+        last_time = this_time
+
         # read Serial
         ser.update_cmds()
         setpoint_a = ser.read_cmd(ser.CMD_SPA)
@@ -64,15 +74,17 @@ def main ():
         ser.send_reply()
 
         # run controllers
-        act_a = control_a.run(setpoint_a,new_pos_a,LOOP_DELAY)
-        act_b = control_b.run(setpoint_b,new_pos_b,LOOP_DELAY)
+        act_a = control_a.run(setpoint_a,new_pos_a,del_time)
+        act_b = control_b.run(setpoint_b,new_pos_b,del_time)
 
         # apply results
         motor_a.set_speed(act_a)
         motor_b.set_speed(act_b)
 
         # regulate loop rate
-        sleep_us(LOOP_DELAY)
+#        if LOOP_DELAY < del_time:
+#          print ('Loop took a long time! ',del_time)
+#        sleep_us(LOOP_DELAY)
 
     # after the serial port tells us to shut down
     print ('Master closed serial port, disabling motors...')
