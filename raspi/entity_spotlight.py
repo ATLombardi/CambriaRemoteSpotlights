@@ -33,11 +33,6 @@ class Entity_Spotlight(Entity):
   def get_target (self):
     return self.target
 
-  # draw the spotlight beam on screen
-#  def render (self):
-    # TODO: put pygame rendering code here
-#    pass
-
   # overrides the teleport_to in Entity
   def teleport_to (self, point):
 #    print ("sent to ",point.get_x())
@@ -49,11 +44,11 @@ class Entity_Spotlight(Entity):
     self.pos.move_to(point.get_x(), point.get_y())
 
   # updates the spotlight's beam on screen
+  # -- DEPRECATED -- this function is only a simulation!
   def update (self, delta_t):
     # put serial reading code here
 
     # move towards the target
-    # TODO: remove this simulation in favor of actual feedback
     self_x = self.pos.get_x()
     self_y = self.pos.get_y()
     targ_x = self.target.get_x()

@@ -1,14 +1,15 @@
 ## rsc_main.py ##
 ## the master file for the Remote Spotlight Controller code ##
 
+# local project stuff
 from touch_tracker import *
 from graphics import *
 from entity_spotlight import *
 from comms import *
 
-import pygame
-import sys
-from threading import Thread
+import pygame                # for rendering
+from threading import Thread # for the serial comms
+
 
 # continually updates a serial inbox. Don't use in the main thread!
 class MailboxMonitor:
@@ -21,6 +22,8 @@ class MailboxMonitor:
 
   def run (self):
     while self.__running:
+      # this is a blocking function, so we just run it without delays
+      # being in its own thread has benefits
       self.m.update_inbox()
 # /MailboxMonitor
 
@@ -36,7 +39,7 @@ def main ():
   except:
     print ("Error when trying to connect to serial ports!")
 
-  print ("done.")
+  print ("done.") # with serial setup
 
   print ("init touch...")
   # initialize touch tracking
@@ -44,35 +47,42 @@ def main ():
   spot_l = Entity_Spotlight (x=200, y=200)
   spot_r = Entity_Spotlight (x=600, y=200)
 
+  # send the spotlights to their home position - which should be the above
   spot_l.go_home()
   spot_r.go_home()
 
+  # declare these for later, default location is home
   target_l = spot_l.get_target()
   target_r = spot_r.get_target()
 
+  # these handle updating serial data incoming
   a_monitor = MailboxMonitor(ser_a)
 #  b_monitor = MailboxMonitor(ser_b)
 
+  # threads to wrap the monitors, lets them run parallel to the main loop
   a_monitor_thread = Thread(target=a_monitor.run)
 #  b_monitor_thread = Thread(target=b_monitor.run)
 
-  print ("done.")
+  print ("done.") # with touch stuff
 
   print ("init pygame...")
-  # prepare the pygame window
+  # prepare the pygame library
   pygame.init()
+  # calculate window size - should be 800x480y
   display_info = pygame.display.Info()
   window_w = display_info.current_w;
   window_h = display_info.current_h;
   print ("window is:",window_w,",",window_h)
+  # prepare the screen
   screen = pygame.display.set_mode( (0,0), pygame.NOFRAME)
-  pygame.mouse.set_visible(False)
+#  pygame.mouse.set_visible(False)
   pygame.display.set_caption('Spotlight Controls')
   bg = Background('/home/pi/Pictures/stage.jpg', (0,0) )
+  # initial render pass to show the background image
   pygame.display.flip()
 
 #  clock = pygame.time.Clock()
-  print ("done.")
+  print ("done.") # with pygame/render stuff
 
   # easy way to stop cleanly from inside loop
   should_stop = False
@@ -89,8 +99,6 @@ def main ():
   print ("Start-up done. Running...")
   try:
     while not should_stop:
-      delta = 0.1 # TODO: get an actual clock check here
-
       # build a Point where the light says it is
       a_point = Point (
         ser_a.read_inbox(ser_a.CMD_SPA),
@@ -130,6 +138,7 @@ def main ():
 
 #      print ('t: ',target_r.get_x(), ',', target_r.get_y())
 
+      # send the target values to the lights
       if ser_a.get_side() == 'L':
         ser_a.send_command(rel_l.get_x(), rel_l.get_y())
 #        ser_b.send_command(rel_r.get_x(), rel_r.get_y())
@@ -137,15 +146,18 @@ def main ():
         ser_a.send_command(rel_r.get_x(), rel_r.get_y())
 #        ser_b.send_command(rel_l.get_x(), rel_l.get_y())
 
-      # actually do rendering
-      screen.fill( (255,255,255) )
+      # actually do rendering, starting with the background
+#      screen.fill( (255,255,255) )
       bg.draw(screen)
 
+      # next the lights
       spot_l.draw(screen)
       spot_r.draw(screen)
 
+      # finish rendering
       pygame.display.update()
 
+      # check for keyboard events and such
       for event in pygame.event.get():
         if event.type == pygame.QUIT:
           should_stop = True
@@ -164,6 +176,8 @@ def main ():
   finally:
     # turn off these events and release the threads
     touch.active(False)
+    ser_a.close()
+#    ser_b.close()
     a_monitor.terminate()
 #    b_monitor.terminate()
     a_monitor_thread.join()
@@ -172,5 +186,6 @@ def main ():
     # and finally, bail out
     exit (exit_reason_number)
 
+# if we just run this file, we'll trigger this
 if __name__ == "__main__":
   main()
