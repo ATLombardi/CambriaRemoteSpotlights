@@ -24,7 +24,10 @@ class MailboxMonitor:
     while self.__running:
       # this is a blocking function, so we just run it without delays
       # being in its own thread has benefits
-      self.m.update_inbox()
+      try:
+        self.m.update_inbox()
+      except SerialException as se:
+        print ('Serial error: ', se)
 # /MailboxMonitor
 
 
@@ -176,10 +179,10 @@ def main ():
   finally:
     # turn off these events and release the threads
     touch.active(False)
-    ser_a.close()
-#    ser_b.close()
     a_monitor.terminate()
 #    b_monitor.terminate()
+    ser_a.close()
+#    ser_b.close()
     a_monitor_thread.join()
 #    b_monitor_thread.join()
     print ("Exit reason: ", exit_reason_number)

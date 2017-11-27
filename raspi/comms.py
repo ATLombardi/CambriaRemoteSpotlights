@@ -3,6 +3,7 @@
 
 import serial
 import re # regex library
+from time import sleep # for delaying
 
 class RS232:
   # track what we're processing inputs for
@@ -53,6 +54,8 @@ class RS232:
   def close (self):
     # notify the pyboard that we're shutting down
     self.send('K')
+    # a one-second wait should be enough to clean up serial
+    sleep(1)
     # flush the buffer, deleting everything in it
     self.ser.reset_input_buffer()
     # release the serial port
