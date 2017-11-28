@@ -153,16 +153,18 @@ def main ():
       pos_r = spot_r.get_location()
 
       # find closest touch point to each light
-      target_l = touch.find_closest(
-        pos_l.get_x(),pos_l.get_y(),
-        mins=(BUTTON_HEIGHT,0),
-        fail_point=target_l
-      )
-      target_r = touch.find_closest(
-        pos_r.get_x(),pos_r.get_y(),
-        mins=(BUTTON_HEIGHT,0),
-        fail_point=target_r
-      )
+      if is_tracking_l:
+        target_l = touch.find_closest(
+          pos_l.get_x(),pos_l.get_y(),
+          mins=(BUTTON_HEIGHT,0),
+          fail_point=target_l
+        )
+      if is_tracking_r:
+        target_r = touch.find_closest(
+          pos_r.get_x(),pos_r.get_y(),
+          mins=(BUTTON_HEIGHT,0),
+          fail_point=target_r
+        )
 
       # set the spotlights to move towards the closest touch points
       spot_l.set_target(target_l)
