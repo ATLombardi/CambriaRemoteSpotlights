@@ -92,8 +92,7 @@ class Rectangle:
     x = self.pos.get_x()
     y = self.pos.get_y()
 
-    if  x < coords[0] < x + self.width
-    and y < coords[1] < y + self.height:
+    if  (x < coords[0] < x + self.width) and (y < coords[1] < y + self.height):
       return True
     # else
     return False

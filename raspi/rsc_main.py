@@ -123,7 +123,7 @@ def main ():
     while not should_stop:
       # if the mouse is being dragged, update the relevant Point
       if is_mouse_pressed:
-        mouse_point.move_to(pygame.mouse.get_pos())
+        mouse_point.move_to_array(pygame.mouse.get_pos())
 
       # build a Point where the light says it is
       a_point = Point (
@@ -218,7 +218,7 @@ def main ():
           # if we're clicking outside of bounds, check for buttons
           pos = pygame.mouse.get_pos()
           is_mouse_pressed = True
-          if pos[1] <= BUTTON_HEIGHT
+          if pos[1] <= BUTTON_HEIGHT:
             for x in range(0,len(buttons)):
               if buttons[x].contains(pos):
                 is_mouse_pressed = False # don't track, we're outside bounds
@@ -226,9 +226,9 @@ def main ():
                   should_stop = True
                   exit_reason_number = 3
                 elif x == 1: # left button
-                  is_tracking_l = !is_tracking_l
+                  is_tracking_l = not is_tracking_l
                 elif x == 2: # right button
-                  is_tracking_r = !is_tracking_r
+                  is_tracking_r = not is_tracking_r
         elif event.type == pygame.MOUSEBUTTONUP:
           is_mouse_pressed = False
 
