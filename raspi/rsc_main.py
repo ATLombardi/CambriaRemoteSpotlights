@@ -8,7 +8,7 @@ from entity_spotlight import *
 from comms import *
 
 import pygame                # for rendering
-from threading import Thread # for the serial comms
+from threading import Thread # for the serial comms monitor
 
 # this defines how tall the on-screen buttons are
 BUTTON_HEIGHT = 50
@@ -98,11 +98,16 @@ def main ():
   # initial render pass to show the background image
   pygame.display.flip()
 
-  # build a couple of buttons: exit, and left and right spotlight toggles
+  # Build a couple of buttons: exit, left and right spotlight toggles, and go-to home for each.
+  # The first coordinate describes the X-location, and since we want a little space between
+  # buttons, we have do do some simple math here.
+  button_width = (window_w / 5.0) - 2
   buttons = (
-    Rectangle(window_w-199,0, 198,BUTTON_HEIGHT, text='Exit!', color=(200,0,0)),
-    Rectangle(  1,0, 198,BUTTON_HEIGHT, text='Track Left'),
-    Rectangle(201,0, 198,BUTTON_HEIGHT, text='Track right')
+    Rectangle(window_w-button_width-1,0, button_width,BUTTON_HEIGHT, color=(200,  0,  0), text='Exit!'),
+    Rectangle(                      1,0, button_width,BUTTON_HEIGHT, text='Track Left'),
+    Rectangle(         button_width+3,0, button_width,BUTTON_HEIGHT, text='Track right'),
+    Rectangle(       2*button_width+5,0, button_width,BUTTON_HEIGHT, color=( 60,140,240), text='Home Left'),
+    Rectangle(       3*button_width+7,0, button_width,BUTTON_HEIGHT, color=( 60,140,240), text='Home Right')
   )
 
 #  clock = pygame.time.Clock()
@@ -229,10 +234,18 @@ def main ():
                 if x == 0: # exit button
                   should_stop = True
                   exit_reason_number = 3
-                elif x == 1: # left button
+                elif x == 1: # left enable toggle
                   is_tracking_l = not is_tracking_l
-                elif x == 2: # right button
+                elif x == 2: # right enable toggle
                   is_tracking_r = not is_tracking_r
+                elif x == 3: # left home button
+                  # disable tracking to make this easier on the user
+                  is_tracking_l = False
+                  spot_l.go_home()
+                elif x == 4: # right home button
+                  is_tracking_r = False
+                  spot_r.go_home()
+                break # we found and resolved a button, stop the For-loop
         elif event.type == pygame.MOUSEBUTTONUP:
           is_mouse_pressed = False
 
