@@ -88,7 +88,7 @@ class Rectangle:
     self.text   = text
     self.color  = color
     if not (text is None):
-      self.font = pygame.font.SysFont(None,48)
+      self.font = pygame.font.SysFont(None,36)
 
   def contains (self, coords):
     x = self.pos.get_x()
