@@ -87,6 +87,8 @@ class Rectangle:
     self.height = h
     self.text   = text
     self.color  = color
+    if not (text is None):
+      self.font = pygame.font.SysFont(None,24)
 
   def contains (self, coords):
     x = self.pos.get_x()
@@ -121,3 +123,13 @@ class Rectangle:
     s.set_colorkey( (0,0,0) )
     pygame.draw.rect(s, self.color, (self.pos.get_x(),self.pos.get_y(),self.width,self.height) )
     display.blit(s, (0,0) )
+    if not (self.text is None):
+      # create a surface with the text, antialiased, and black
+      words = self.font.render(self.text, True, (0,0,0) )
+      word_rect = words.get_rect()
+      # override the location of the text surface bounding box
+      word_rect[0] = self.pos.get_x()
+      word_rect[1] = self.pos.get_y()
+      # render the text onto the main display
+      display.blit(words, words_rect)
+

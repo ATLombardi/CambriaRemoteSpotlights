@@ -98,9 +98,9 @@ def main ():
 
   # build a couple of buttons: exit, and left and right spotlight toggles
   buttons = (
-    Rectangle(window_w-200,0, 200,BUTTON_HEIGHT),
-    Rectangle(  0,0, 200,BUTTON_HEIGHT),
-    Rectangle(200,0, 200,BUTTON_HEIGHT)
+    Rectangle(window_w-199,0, 198,BUTTON_HEIGHT, text='Exit!', color=(200,0,0)),
+    Rectangle(  1,0, 198,BUTTON_HEIGHT, text='Track Left'),
+    Rectangle(201,0, 198,BUTTON_HEIGHT, text='Track right')
   )
 
 #  clock = pygame.time.Clock()
