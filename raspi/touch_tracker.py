@@ -34,15 +34,15 @@ class Tracker:
   # returns the index of the new point
   def add_external_point (self, point):
     index = len(points)
-    points.append(point)
+    self.points.append(point)
     return index
 
   # update an externally-added point
   def update_external_point (self, index, point):
-    if index >= len(points):
+    if index >= len(self.points):
       print ("Error, index out of Point range!")
     else:
-      points[index].move_to(point.get_x(),point.get_y())
+      self.points[index].move_to(point.get_x(),point.get_y())
 
   # called when a touch starts
   def __touch_down (self, touch):
