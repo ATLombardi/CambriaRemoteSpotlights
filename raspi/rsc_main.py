@@ -123,10 +123,6 @@ def main ():
   print ("Start-up done. Running...")
   try:
     while not should_stop:
-      # if the mouse is being dragged, update the relevant Point
-      if is_mouse_pressed:
-        mouse_point.move_to_array(pygame.mouse.get_pos())
-
       # build a Point where the light says it is
       a_point = Point (
         ser_a.read_inbox(ser_a.CMD_SPA),
@@ -152,17 +148,21 @@ def main ():
       pos_l = spot_l.get_location()
       pos_r = spot_r.get_location()
 
+      # if the mouse is being dragged, update the relevant Point
+      if is_mouse_pressed:
+        mouse_point.move_to_array(pygame.mouse.get_pos())
+
       # find closest touch point to each light
       if is_tracking_l:
         target_l = touch.find_closest(
           pos_l.get_x(),pos_l.get_y(),
-          mins=(BUTTON_HEIGHT,0),
+          mins=(0,BUTTON_HEIGHT),
           fail_point=target_l
         )
       if is_tracking_r:
         target_r = touch.find_closest(
           pos_r.get_x(),pos_r.get_y(),
-          mins=(BUTTON_HEIGHT,0),
+          mins=(0,BUTTON_HEIGHT),
           fail_point=target_r
         )
 
