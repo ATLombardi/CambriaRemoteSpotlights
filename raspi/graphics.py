@@ -131,5 +131,5 @@ class Rectangle:
       word_rect[0] = self.pos.get_x()
       word_rect[1] = self.pos.get_y()
       # render the text onto the main display
-      display.blit(words, words_rect)
+      display.blit(words, word_rect)
 
