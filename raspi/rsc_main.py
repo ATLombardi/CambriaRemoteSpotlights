@@ -50,10 +50,12 @@ def main ():
   # not much setup for mouse, and it does a lot of the same things
   # so we'll just slip this in here
   is_mouse_pressed = False
-  mouse_point = Point (0,0)
+  mouse_point = Point (-1,-1)
 
   # initialize touch tracking
   touch = Tracker ()
+  touch.add_external_point(mouse_point)
+
   spot_l = Entity_Spotlight (x=200, y=200)
   spot_r = Entity_Spotlight (x=600, y=200)
 
