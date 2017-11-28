@@ -33,7 +33,7 @@ class Tracker:
   # add a point from an external source (IE mouse) to the list
   # returns the index of the new point
   def add_external_point (self, point):
-    index = len(points)
+    index = len(self.points)
     self.points.append(point)
     return index
 
