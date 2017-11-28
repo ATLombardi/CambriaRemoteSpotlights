@@ -11,16 +11,15 @@ class Tracker:
   points = [ Point(-1,-1) for p in range(10) ]
 
   # returns the closest point to the supplied coords
-  def find_closest (self, x, y, fail_point=None):
+  def find_closest (self, x, y, mins=(0,0), dist=100000, fail_point=None):
 #    print ("searching around ",x,",",y)
 #    print ('fail point is',fail_point.get_x(),',',fail_point.get_y())
     temp    = Point (x,y)
     result  = Point (x,y)
-    dist    = 100000
     succeed = False
     for p in self.points:
       latest = temp.dist2(p)
-      if 0 < latest < dist and p.get_x() > 0 and p.get_y() > 0:
+      if 0 < latest < dist and p.get_x() > mins[0] and p.get_y() > mins[1]:
         dist = latest
         result.move_to(p.get_x(), p.get_y())
         succeed = True

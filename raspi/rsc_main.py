@@ -47,10 +47,18 @@ def main ():
   print ("done.") # with serial setup
 
   print ("init touch...")
+  # not much setup for mouse, and it does a lot of the same things
+  # so we'll just slip this in here
+  is_mouse_pressed = False
+  mouse_point = Point (0,0)
+
   # initialize touch tracking
   touch = Tracker ()
   spot_l = Entity_Spotlight (x=200, y=200)
   spot_r = Entity_Spotlight (x=600, y=200)
+
+  is_tracking_l = True
+  is_tracking_r = True
 
   # send the spotlights to their home position - which should be the above
   spot_l.go_home()
@@ -88,10 +96,12 @@ def main ():
   # initial render pass to show the background image
   pygame.display.flip()
 
-  # build a couple of buttons: left and right spotlight toggles, and exit
-  button_left  = Rectangle(  0,0, 200,BUTTON_HEIGHT)
-  button_right = Rectangle(200,0, 200,BUTTON_HEIGHT)
-  button_exit  = Rectangle(window_w-200,0, 200,BUTTON_HEIGHT)
+  # build a couple of buttons: exit, and left and right spotlight toggles
+  buttons = (
+    Rectangle(window_w-200,0, 200,BUTTON_HEIGHT),
+    Rectangle(  0,0, 200,BUTTON_HEIGHT),
+    Rectangle(200,0, 200,BUTTON_HEIGHT)
+  )
 
 #  clock = pygame.time.Clock()
   print ("done.") # with pygame/render stuff
@@ -111,6 +121,10 @@ def main ():
   print ("Start-up done. Running...")
   try:
     while not should_stop:
+      # if the mouse is being dragged, update the relevant Point
+      if is_mouse_pressed:
+        mouse_point.move_to(pygame.mouse.get_pos())
+
       # build a Point where the light says it is
       a_point = Point (
         ser_a.read_inbox(ser_a.CMD_SPA),
@@ -137,8 +151,16 @@ def main ():
       pos_r = spot_r.get_location()
 
       # find closest touch point to each light
-      target_l = touch.find_closest(pos_l.get_x(),pos_l.get_y(), fail_point=target_l )
-      target_r = touch.find_closest(pos_r.get_x(),pos_r.get_y(), fail_point=target_r )
+      target_l = touch.find_closest(
+        pos_l.get_x(),pos_l.get_y(),
+        mins=(BUTTON_HEIGHT,0),
+        fail_point=target_l
+      )
+      target_r = touch.find_closest(
+        pos_r.get_x(),pos_r.get_y(),
+        mins=(BUTTON_HEIGHT,0),
+        fail_point=target_r
+      )
 
       # set the spotlights to move towards the closest touch points
       spot_l.set_target(target_l)
@@ -162,6 +184,21 @@ def main ():
 #      screen.fill( (255,255,255) )
       bg.draw(screen)
 
+      # set the buttons' color depending on their tracking toggle
+      if is_tracking_l:
+        buttons[1].set_color( (0,128,0) )
+      else:
+        buttons[1].set_color( (128,0,0) )
+
+      if is_tracking_r:
+        buttons[2].set_color( (0,128,0) )
+      else:
+        buttons[2].set_color( (128,0,0) )
+
+      # draw the buttons
+      for b in buttons:
+        b.draw(screen)
+
       # next the lights
       spot_l.draw(screen)
       spot_r.draw(screen)
@@ -177,6 +214,23 @@ def main ():
         elif event.type == pygame.KEYDOWN:
           should_stop = True
           exit_reason_number = 2
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+          # if we're clicking outside of bounds, check for buttons
+          pos = pygame.mouse.get_pos()
+          is_mouse_pressed = True
+          if pos[1] <= BUTTON_HEIGHT
+            for x in range(0,len(buttons)):
+              if buttons[x].contains(pos):
+                is_mouse_pressed = False # don't track, we're outside bounds
+                if x == 0: # exit button
+                  should_stop = True
+                  exit_reason_number = 3
+                elif x == 1: # left button
+                  is_tracking_l = !is_tracking_l
+                elif x == 2: # right button
+                  is_tracking_r = !is_tracking_r
+        elif event.type == pygame.MOUSEBUTTONUP:
+          is_mouse_pressed = False
 
 #      clock.tick (240)
 

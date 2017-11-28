@@ -85,6 +85,21 @@ class Rectangle:
     self.pos = Point(x,y)
     self.width  = w
     self.height = h
+    self.text   = text
+    self.color  = color
+
+  def contains (self, coords):
+    x = self.pos.get_x()
+    y = self.pos.get_y()
+
+    if  x < coords[0] < x + self.width
+    and y < coords[1] < y + self.height:
+      return True
+    # else
+    return False
+
+  def set_color (self, color):
+    self.color = color
 
   def move_to (self, x, y):
     self.pos.move_to(x,y)
@@ -105,5 +120,5 @@ class Rectangle:
     s = pygame.Surface((800,480))
     s.fill( (0,0,0) )
     s.set_colorkey( (0,0,0) )
-    pygame.draw.rect(s, color, (self.pos.get_x(),self.pos.get_y(),self.width,self.height) )
+    pygame.draw.rect(s, self.color, (self.pos.get_x(),self.pos.get_y(),self.width,self.height) )
     display.blit(s, (0,0) )

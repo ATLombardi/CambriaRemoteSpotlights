@@ -34,6 +34,11 @@ class Point:
     self.x = x
     self.y = y
 
+  # alternate version that accepts a tuple
+  def move_to (self, coord):
+    self.x = coord[0]
+    self.y = coord[1]
+
   # returns the x-coordinate
   def get_x (self):
     return self.x
