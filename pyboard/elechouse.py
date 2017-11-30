@@ -23,114 +23,114 @@ from pyb import Pin, Timer
 # Driver class. Implements half of the board - either A or B.
 class Driver:
 
-    # static variable to keep track of which timer channels are in use
-    __channel_in_use__ = [ 0, 0, 0, 0]
-    
-    # static dictionary for the channel numbers
-    __channel_dict__ = {
-        'X7'  : 1,
-        'A6'  : 1,
-        'X8'  : 2,
-        'A7'  : 2,
-        'Y11' : 3,
-        'B0'  : 3,
-        'Y12' : 4,
-        'B1'  : 4
-    }
+  # static variable to keep track of which timer channels are in use
+  __channel_in_use__ = [ 0, 0, 0, 0]
 
-    __timer__ = Timer(3)
+  # static dictionary for the channel numbers
+  __channel_dict__ = {
+    'X7'  : 1,
+    'A6'  : 1,
+    'X8'  : 2,
+    'A7'  : 2,
+    'Y11' : 3,
+    'B0'  : 3,
+    'Y12' : 4,
+    'B1'  : 4
+  }
 
-    # private method that handles timer and pin initialization
-    def __set_up_channel__(self, pin_name):
-        # we'll return this for other functions to reference
-        timer_channel = None
-        if not Driver.__channel_in_use__[0]:
-            # set the timer to run at 50kHz
-            Driver.__timer__.init(freq=50000)
-        if pin_name in Driver.__channel_dict__:
-            chnum = Driver.__channel_dict__[pin_name]
-            if not (Driver.__channel_in_use__[chnum-1]):
-                # mark channel as used (array is zero-indexed, hence -1
-                Driver.__channel_in_use__[chnum-1] = 1
-                # initialize channel to PWM mode with zero duty cycle
-                timer_channel = Driver.__timer__.channel(
-                    chnum,
-                    Timer.PWM,
-                    pulse_width_percent=0,
-                    pin=Pin(pin_name,Pin.ALT,af=2)
-                )
-            else:
-                print ('Error, channel ',chnum,' is already in use!')
-        else:
-            print ('Error, ',pin_name,' is not a valid channel.')
-        return timer_channel
+  __timer__ = Timer(3)
 
-    # create an instance. Channel is purely cosmetic, the actual
-    # control depends on wiring
-    def __init__(self, pin_name_left, pin_name_right, pin_name_en, pin_name_dis, channel='A'):
-        self.name  = channel
-        self.dis   = Pin(pin_name_dis, Pin.OUT_PP)
-        # make sure motor starts out disabled	
-        self.dis.high()
-        self.en    = Pin(pin_name_en,  Pin.OUT_PP)
-        # make sure motor starts out coasting
-        self.en.low()
-        self.speed = 0
-        self.lchan = self.__set_up_channel__(pin_name_left)
-        self.rchan = self.__set_up_channel__(pin_name_right)
+  # private method that handles timer and pin initialization
+  def __set_up_channel__(self, pin_name):
+    # we'll return this for other functions to reference
+    timer_channel = None
+    if not Driver.__channel_in_use__[0]:
+      # set the timer to run at 50kHz
+      Driver.__timer__.init(freq=50000)
+    if pin_name in Driver.__channel_dict__:
+      chnum = Driver.__channel_dict__[pin_name]
+      if not (Driver.__channel_in_use__[chnum-1]):
+        # mark channel as used (array is zero-indexed, hence -1
+        Driver.__channel_in_use__[chnum-1] = 1
+        # initialize channel to PWM mode with zero duty cycle
+          timer_channel = Driver.__timer__.channel(
+            chnum,
+            Timer.PWM,
+            pulse_width_percent=0,
+            pin=Pin(pin_name,Pin.ALT,af=2)
+          )
+      else:
+        print ('Error, channel ',chnum,' is already in use!')
+    else:
+      print ('Error, ',pin_name,' is not a valid channel.')
+    return timer_channel
 
-    # get the cosmetic name of this instance
-    def get_channel (self):
-        return self.name
+  # create an instance. Channel is purely cosmetic, the actual
+  # control depends on wiring
+  def __init__(self, pin_name_left, pin_name_right, pin_name_en, pin_name_dis, channel='A'):
+    self.name  = channel
+    self.dis   = Pin(pin_name_dis, Pin.OUT_PP)
+    # make sure motor starts out disabled	
+    self.dis.high()
+    self.en    = Pin(pin_name_en,  Pin.OUT_PP)
+    # make sure motor starts out coasting
+    self.en.low()
+    self.speed = 0
+    self.lchan = self.__set_up_channel__(pin_name_left)
+    self.rchan = self.__set_up_channel__(pin_name_right)
 
-    # returns a tuple of the driver's various state data
-    def get_status (self):
-        return [
-            'drive channel',   self.name,
-            'output enabled',  self.en.value(),
-            'output disabled', self.dis.value(),
-            'speed setting',   self.speed
-        ]
+  # get the cosmetic name of this instance
+  def get_channel (self):
+    return self.name
 
-    # stop the motors with brake or coast
-    def stop (self, brake=True):
-        self.speed = 0
-        self.lchan.pulse_width_percent(100)
+  # returns a tuple of the driver's various state data
+  def get_status (self):
+    return [
+      'drive channel',   self.name,
+      'output enabled',  self.en.value(),
+      'output disabled', self.dis.value(),
+      'speed setting',   self.speed
+    ]
+
+  # stop the motors with brake or coast
+  def stop (self, brake=True):
+    self.speed = 0
+    self.lchan.pulse_width_percent(100)
+    self.rchan.pulse_width_percent(100)
+    self.en.value(brake)
+
+  # enable the motors
+  def enable (self):
+    self.stop()
+    self.dis.low()
+    self.en.high()
+
+  # disable the motors
+  def disable (self):
+    self.stop()
+    self.dis.high()
+    self.en.low()
+
+  # set the driving speed (PWM %) of this driver
+  def set_speed (self, speed):
+    if speed < 0:
+      if speed < -100:
+        speed = -100
+        self.speed = speed
+      if not (self.lchan == None):
+        # speed is negative here, so addition is subtraction
+        self.lchan.pulse_width_percent(100+speed)
         self.rchan.pulse_width_percent(100)
-        self.en.value(brake)
-
-    # enable the motors
-    def enable (self):
-        self.stop()
-        self.dis.low()
-        self.en.high()
-
-    # disable the motors
-    def disable (self):
-        self.stop()
-        self.dis.high()
-        self.en.low()
-
-    # set the driving speed (PWM %) of this driver
-    def set_speed (self, speed):
-        if speed < 0:
-            if speed < -100:
-                speed = -100
-            self.speed = speed
-            if not (self.lchan == None):
-                # speed is negative here, so addition is subtraction
-                self.lchan.pulse_width_percent(100+speed)
-                self.rchan.pulse_width_percent(100)
-            else:
-                print ('Fake Channel speed set to ',speed)
-        else:
-            if speed > 100:
-                speed = 100
-            self.speed = speed
-            if not (self.rchan == None):
-                # smaller PWM duty cycles = faster speed
-                self.lchan.pulse_width_percent(100)
-                self.rchan.pulse_width_percent(100-speed)
-            else:
-                print ('Fake Channel speed set to ',speed)
+      else:
+        print ('Fake Channel speed set to ',speed)
+    else:
+      if speed > 100:
+        speed = 100
+        self.speed = speed
+      if not (self.rchan == None):
+        # smaller PWM duty cycles = faster speed
+        self.lchan.pulse_width_percent(100)
+        self.rchan.pulse_width_percent(100-speed)
+      else:
+        print ('Fake Channel speed set to ',speed)
 

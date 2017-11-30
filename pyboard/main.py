@@ -10,84 +10,109 @@ import time
 SER_BUS    = 6
 SER_BAUD   = 115200
 
+# set to true to prevent entry into 'main' in case of resets during testing
+TEST_ENDURANCE = True
+
 def main ():
-    print ('connection successful')
+  print ('connection successful')
 
-    # -- Set Up Variables --
-    # for loop iteration
-    old_pos_a = 0
-    old_pos_b = 0
+  # -- Set Up Variables --
+  # for testing
+  test_counter = 0
+  test_light   = pyb.LED(3)
 
-    # -- set Up Systems --
-    # serial port
-    ser = comms.Serial(SER_BUS, SER_BAUD)
+  # for loop iteration
+  old_pos_a = 0
+  old_pos_b = 0
 
-    # encoders
-    encA = sensors.Encoder(pyb.Timer(4), pyb.Pin.board.X10, pyb.Pin.board.X9)
-    encB = sensors.Encoder(pyb.Timer(2), pyb.Pin.board.X4, pyb.Pin.board.X3)
+  # -- set Up Systems --
+  # serial port
+  ser = comms.Serial(SER_BUS, SER_BAUD)
 
-     # motor drivers
-    motor_a = elechouse.Driver('X8',  'X7', 'X6','X5')
-    motor_b = elechouse.Driver('Y12','Y11','Y10','Y9')
+  # encoders
+  encA = sensors.Encoder(pyb.Timer(4), pyb.Pin.board.X10, pyb.Pin.board.X9)
+  encB = sensors.Encoder(pyb.Timer(2), pyb.Pin.board.X4, pyb.Pin.board.X3)
 
-    # PID controllers
-    control_a = pid.Controller(P=5, I=0.0001, D=0)
-    control_b = pid.Controller(P=1)
+  # motor drivers
+  motor_a = elechouse.Driver('X8',  'X7', 'X6','X5')
+  motor_b = elechouse.Driver('Y12','Y11','Y10','Y9')
 
-    motor_a.enable()
-    motor_b.enable()
+  # PID controllers
+  control_a = pid.Controller(P=5, I=0.0001, D=0)
+  control_b = pid.Controller(P=1)
 
-    # zero the encoders
-    # -- TEMPORARY METHOD --
-    encA.Zero()
-    encB.Zero()
+  motor_a.enable()
+  motor_b.enable()
 
-    # note the time
-    last_time = time.ticks_us()
-    # make this exist, for later use
-    this_time = last_time
+  # zero the encoders
+  # -- TEMPORARY METHOD --
+  encA.Zero()
+  encB.Zero()
 
-    # -- Enter Main Loop --
-    while not ser.should_close():
-        # determine loop speed
-        this_time = time.ticks_us()
-        del_time  = time.ticks_diff(this_time, last_time)
-        last_time = this_time
+  # note the time
+  last_time = time.ticks_us()
+  # make this exist, for later use
+  this_time = last_time
 
-        # read Serial
-        ser.update_cmds()
-        setpoint_a = ser.read_cmd(ser.CMD_SPA)
-        setpoint_b = ser.read_cmd(ser.CMD_SPB)
+  # -- Enter Main Loop --
+  while not ser.should_close():
+    # determine loop speed
+    this_time = time.ticks_us()
+    del_time  = time.ticks_diff(this_time, last_time)
+    last_time = this_time
 
-        # read encoders
-        new_pos_a = encA.Read()
-        v_a = new_pos_a - old_pos_a
-        old_pos_a = new_pos_a
+    test_counter += del_time
 
-        new_pos_b = encB.Read()
-        v_b = new_pos_b - old_pos_b
-        old_pos_b = new_pos_b
+    if test_counter >= 1000000:
+      test_light.toggle()
+      test_counter = 0
 
-        # update serial feedback
-#        print ('a:',new_pos_a,' b:',new_pos_b)
-        ser.refresh_reply(new_pos_a, new_pos_b)
-        ser.send_reply()
+    # read Serial
+    ser.update_cmds()
+    setpoint_a = ser.read_cmd(ser.CMD_SPA)
+    setpoint_b = ser.read_cmd(ser.CMD_SPB)
 
-        # run controllers
-        act_a = control_a.run(setpoint_a,new_pos_a,del_time)
-        act_b = control_b.run(setpoint_b,new_pos_b,del_time)
+    # read encoders
+    new_pos_a = encA.Read()
+    v_a = new_pos_a - old_pos_a
+    old_pos_a = new_pos_a
 
-        # apply results
-        motor_a.set_speed(act_a)
-        motor_b.set_speed(act_b)
+    new_pos_b = encB.Read()
+    v_b = new_pos_b - old_pos_b
+    old_pos_b = new_pos_b
 
-        # regulate loop rate
-#        if LOOP_DELAY < del_time:
-#          print ('Loop took a long time! ',del_time)
-#        sleep_us(LOOP_DELAY)
+    # update serial feedback
+#    print ('a:',new_pos_a,' b:',new_pos_b)
+    ser.refresh_reply(new_pos_a, new_pos_b)
+    ser.send_reply()
 
-    # after the serial port tells us to shut down
-    print ('Master closed serial port, disabling motors...')
-    motor_a.disable()
-    motor_b.disable()
-    print ('System stopped. Good night.')
+    # run controllers
+    act_a = control_a.run(setpoint_a,new_pos_a,del_time)
+    act_b = control_b.run(setpoint_b,new_pos_b,del_time)
+
+    # apply results
+    motor_a.set_speed(act_a)
+    motor_b.set_speed(act_b)
+
+    # regulate loop rate
+#    if LOOP_DELAY < del_time:
+#      print ('Loop took a long time! ',del_time)
+#      sleep_us(LOOP_DELAY)
+
+  # after the serial port tells us to shut down
+  print ('Master closed serial port, disabling motors...')
+  motor_a.disable()
+  motor_b.disable()
+  print ('System stopped. Good night.')
+
+# this will be true if the pyboard is running this file
+if __name__ == "__main__":
+  # pre-run escape routine: if we want to avoid running 'main'
+  sw = pyb.Switch()
+  l4 = pyb.LED(4)
+  # indicate that the USR button window is open - hold to skip 'main'
+  l4.on()
+  time.sleep(1)
+  l4.off()
+  if not sw() and not TEST_ENDURANCE:
+    main()
