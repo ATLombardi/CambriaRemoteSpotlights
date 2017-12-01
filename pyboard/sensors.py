@@ -40,3 +40,8 @@ class Encoder:
   def Zero(self):
     ''' This method sets the encoder value to zero. '''
     return self.tim.counter(0)
+
+
+  def Set(self, value):
+    ''' This method sets the encoder value to an arbitrary number. '''
+    return self.tim.counter(value)

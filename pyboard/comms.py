@@ -99,9 +99,9 @@ class Serial:
           try:
           # make an int from the combined decoded characters in val
             val = int(''.join(map(bytes.decode,val)))
-            except ValueError:
-              print ('Error decoding',val)
-                val = 0
+          except ValueError:
+            print ('Error decoding',val)
+            val = 0
         else:
           val = 0
 

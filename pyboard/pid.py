@@ -61,6 +61,27 @@ class Controller:
   def set_K_W (self, value):
     self.windup = value
 
+  # assign or update the clamping limits on the output
   def set_saturation(self, neg, pos):
     self.sat_neg = neg
     self.sat_pos = pos
+
+# get the proportional gain
+  def get_K_P (self, value):
+    return self.P
+
+  # get the integral gain
+  def get_K_I (self, value):
+    return self.I
+
+  # get the derivative gain
+  def get_K_D (self, value):
+    return self.D
+
+  # get the integral windup prevention factor
+  def get_K_W (self, value):
+    return self.windup
+
+  # get the clamping limits on the output
+  def get_saturation(self, neg, pos):
+    return (self.sat_neg,self.sat_pos)
