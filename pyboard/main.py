@@ -32,8 +32,8 @@ def main ():
   ser.side_tag = SIDE_TAG 
 
   # encoders
-  encA = sensors.Encoder(pyb.Timer(4), pyb.Pin.board.X10, pyb.Pin.board.X9)
-  encB = sensors.Encoder(pyb.Timer(2), pyb.Pin.board.X4, pyb.Pin.board.X3)
+  encA = sensors.Encoder(pyb.Timer(2), pyb.Pin.board.X4,  pyb.Pin.board.X3)
+  encB = sensors.Encoder(pyb.Timer(4), pyb.Pin.board.X10, pyb.Pin.board.X9)
 
   # motor drivers
   motor_a = elechouse.Driver('X8',  'X7', 'X6','X5')
@@ -55,8 +55,8 @@ def main ():
   # assign some strict limits to make zeroing simpler
   control_a.set_K_P(1)
   control_b.set_K_P(1)
-  control_a.set_saturation(-20,20)
-  control_b.set_saturation(-20,20)
+  control_a.set_saturation(-10,10)
+  control_b.set_saturation(-10,10)
 
   logfile = open('log/encoder.dat','rw')
   encA.Set(logfile.readline())
@@ -64,16 +64,18 @@ def main ():
 
   # set up an interrupt on the index pin of the encoders
   extA = pyb.ExtInt(
-    pyb.Pin('Y3'),
+    pyb.Pin('Y8'),
     pyb.ExtInt.IRQ_RISING,
     pyb.Pin.PULL_NONE,
     lambda:encA.Zero()
+  )
 
   extB = pyb.ExtInt(
     pyb.Pin('X2'),
     pyb.ExtInt.IRQ_RISING,
     pyb.Pin.PULL_NONE,
     lambda:encB.Zero()
+  )
 
   # now let's try to get to what we thought was zero
   zeroing_last = encA.Read()
@@ -104,8 +106,8 @@ def main ():
   control_b.set_K_P(5)
   control_a.set_K_I(0.0001)
   control_b.set_K_I(0.0001)
-  control_a.set_saturation(-100,100)
-  control_b.set_saturation(-100,100)
+  control_a.set_saturation(-95,95)
+  control_b.set_saturation(-95,95)
   # -- / real --
 
   # note the time
@@ -165,8 +167,8 @@ def main ():
 
   print ('Storing last known encoder positions...')
   logfile.seek(0)
-  logfile.write({':06d}'.format(encA.Read()))
-  logfile.write({':06d}'.format(encB.Read()))
+  logfile.write(':06d}'.format(encA.Read()) )
+  logfile.write(':06d}'.format(encB.Read()) )
   time.sleep(1)
   logfile.close()
   print ('System stopped. Good night.')

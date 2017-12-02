@@ -1,15 +1,15 @@
 PIN    FUNCTIONS              ENCODER?    MOTOR?    SERIAL?   WIRING
 ----------------------------+-----------+---------+----------+------------
-Y1   T3.1 UART6T            |     Y     |    Y    |    Y     |  E1A  
-Y2   T3.2 UART6R            |     Y     |    Y    |    Y     |  E1B  
-Y3   T2.3                   |           |    Y    |          |  E1Z  
+Y1   T3.1 UART6T            |     Y     |    Y    |    Y     |  CMT  
+Y2   T3.2 UART6R            |     Y     |    Y    |    Y     |  CMR  
+Y3   T2.3                   |           |    Y    |          |       
 Y4   T4.4 T11.1             |           |    Y    |          |       
 Y5   -                      |           |         |          |       
 Y6   -                      |           |         |          |       
 Y7                          |           |         |          |       
-Y8                          |           |         |          |       
-X9   T4.1 UART1T            |     Y     |    Y    |    Y     |  CMT  
-X10  T4.2 UART1R            |     Y     |    Y    |    Y     |  CMR  
+Y8                          |           |         |          |  E1Z  
+X9   T4.1 UART1T            |     Y     |    Y    |    Y     |  E1B  
+X10  T4.2 UART1R            |     Y     |    Y    |    Y     |  E1A  
 X11  -                      |           |         |          |       
 X12  -                      |           |         |          |       
 RST  -                      |           |         |          |       

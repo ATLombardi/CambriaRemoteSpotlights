@@ -52,13 +52,13 @@ class Driver:
       if not (Driver.__channel_in_use__[chnum-1]):
         # mark channel as used (array is zero-indexed, hence -1
         Driver.__channel_in_use__[chnum-1] = 1
-        # initialize channel to PWM mode with zero duty cycle
-          timer_channel = Driver.__timer__.channel(
-            chnum,
-            Timer.PWM,
-            pulse_width_percent=0,
-            pin=Pin(pin_name,Pin.ALT,af=2)
-          )
+        # initialize channel to PWM mode with 100% duty cycle
+        timer_channel = Driver.__timer__.channel(
+          chnum,
+          Timer.PWM,
+          pulse_width_percent=100,
+          pin=Pin(pin_name,Pin.ALT,af=2)
+        )
       else:
         print ('Error, channel ',chnum,' is already in use!')
     else:
@@ -101,7 +101,7 @@ class Driver:
 
   # enable the motors
   def enable (self):
-    self.stop()
+    self.stop(brake=False)
     self.dis.low()
     self.en.high()
 
@@ -116,7 +116,7 @@ class Driver:
     if speed < 0:
       if speed < -100:
         speed = -100
-        self.speed = speed
+      self.speed = speed
       if not (self.lchan == None):
         # speed is negative here, so addition is subtraction
         self.lchan.pulse_width_percent(100+speed)
@@ -126,7 +126,7 @@ class Driver:
     else:
       if speed > 100:
         speed = 100
-        self.speed = speed
+      self.speed = speed
       if not (self.rchan == None):
         # smaller PWM duty cycles = faster speed
         self.lchan.pulse_width_percent(100)
