@@ -67,21 +67,21 @@ class Controller:
     self.sat_pos = pos
 
 # get the proportional gain
-  def get_K_P (self, value):
+  def get_K_P (self):
     return self.P
 
   # get the integral gain
-  def get_K_I (self, value):
+  def get_K_I (self):
     return self.I
 
   # get the derivative gain
-  def get_K_D (self, value):
+  def get_K_D (self):
     return self.D
 
   # get the integral windup prevention factor
-  def get_K_W (self, value):
+  def get_K_W (self):
     return self.windup
 
   # get the clamping limits on the output
-  def get_saturation(self, neg, pos):
+  def get_saturation(self):
     return (self.sat_neg,self.sat_pos)

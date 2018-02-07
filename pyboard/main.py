@@ -63,26 +63,27 @@ def test_step (motor, setpoint):
   print ('stepping motor',motor,'from',old_pos,'to',setpoint)
   mot.enable()
   last_time = time.ticks_us()
-  while True:
-    this_time = time.ticks_us()
-    del_time  = time.ticks_diff(this_time, last_time)
-    last_time = this_time
+  try:
+    while True:
+      this_time = time.ticks_us()
+      del_time  = time.ticks_diff(this_time, last_time)
+      last_time = this_time
 
-    new_pos = enc.Read()
-    v = new_pos - old_pos
-    old_pos = new_pos
+      new_pos = enc.Read()
+      v = new_pos - old_pos
+      old_pos = new_pos
 
-    act = con.run(setpoint,new_pos,del_time)
-    if (act == 0):
-      break
-    else:
+      act = con.run(setpoint,new_pos,del_time)
+      print('pos:',new_pos,'action:',act)
       if (SIDE_TAG == 'R'):
-	    act = act * -1 # flip the direction of A's rotation
+        act = act * -1 # flip the direction of A's rotation
       mot.set_speed(act)
-
-  print('Stopped at',enc.Read())
-  mot.stop()
-  mot.disable()
+  except KeyboardInterrupt:
+    pass # ^C is the expected way to get out of this, for now
+  finally:
+    print('Stopped at',enc.Read())
+    mot.stop()
+    mot.disable()
 # /end test_step
 
 def test_con (controller, P,I,D,satmin,satmax):
