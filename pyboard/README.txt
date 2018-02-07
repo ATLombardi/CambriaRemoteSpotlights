@@ -1,12 +1,17 @@
-This is a MicroPython board
+key = USB_VID val = f055
+key = USB_PID_CDC_MSC val = 9800
+key = USB_PID_CDC_HID val = 9801
+key = USB_PID_CDC val = 9802
+; Windows USB CDC ACM Setup File
+; Based on INF files which were:
+;     Copyright (c) 2000 Microsoft Corporation
+;     Copyright (C) 2007 Microchip Technology Inc.
+; Likely to be covered by the MLPL as found at:
+;    <http://msdn.microsoft.com/en-us/cc300389.aspx#MLPL>.
 
-You can get started right away by writing your Python code in 'main.py'.
-
-For a serial prompt:
- - Windows: you need to go to 'Device manager', right click on the unknown device,
-   then update the driver software, using the 'pybcdc.inf' file found on this drive.
-   Then use a terminal program like Hyperterminal or putty.
- - Mac OS X: use the command: screen /dev/tty.usbmodem*
- - Linux: use the command: screen /dev/ttyACM0
-
-Please visit http://micropython.org/help/ for further help.
+[Version]
+Signature="$Windows NT$"
+Class=Ports
+ClassGuid={4D36E978-E325-11CE-BFC1-08002BE10318}
+Provider=%MFGNAME%
+Layou
