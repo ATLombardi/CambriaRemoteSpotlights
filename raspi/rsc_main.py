@@ -164,14 +164,19 @@ def main ():
           mins=(0,BUTTON_HEIGHT),
           fail_point=target_l
         )
+      else:
+        target_l = spot_l.get_home()
+
       if is_tracking_r:
         target_r = touch.find_closest(
           pos_r.get_x(),pos_r.get_y(),
           mins=(0,BUTTON_HEIGHT),
           fail_point=target_r
         )
+      else:
+        target_r = spot_r.get_home()
 
-      # set the spotlights to move towards the closest touch points
+      # set the spotlights to move towards the targets
       spot_l.set_target(target_l)
       spot_r.set_target(target_r)
 
