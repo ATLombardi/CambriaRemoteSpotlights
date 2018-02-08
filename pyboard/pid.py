@@ -25,11 +25,11 @@ class Controller:
     errp = err * self.P
 
     # integral action
-    self.err_sum += (err * self.I) - (self.err_win * self.windup)
+    self.err_sum += (err * self.I) - (self.err_win * self.windup) / delta_t
 
     # derivative action
-    err_der = (self.act_old - actual) * self.D / delta_t
-    self.err_old = err
+    err_der = (self.act_old - actual) * self.D * delta_t
+    self.act_old = actual
 
     # evaluate total action
     act = errp + self.err_sum + err_der

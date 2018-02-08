@@ -41,6 +41,7 @@ def test_enc (encoder):
     if (not (val == old)):
       print(val)
       old = val
+      time.sleep_us(1)
 # /end test_enc
 
 def test_step (motor, setpoint):
@@ -74,10 +75,11 @@ def test_step (motor, setpoint):
       old_pos = new_pos
 
       act = con.run(setpoint,new_pos,del_time)
-      print('pos:',new_pos,'action:',act)
+    #  print('pos:',new_pos,'action:',act)
       if (SIDE_TAG == 'R'):
         act = act * -1 # flip the direction of A's rotation
       mot.set_speed(act)
+      time.sleep_us(1)
   except KeyboardInterrupt:
     pass # ^C is the expected way to get out of this, for now
   finally:
@@ -192,12 +194,15 @@ def main ():
 #  motor_b.stop()
 
   # assign the actual values used during run time
-  control_a.set_K_P(5)
-  control_b.set_K_P(5)
-  control_a.set_K_I(0.0001)
-  control_b.set_K_I(0.0001)
-  control_a.set_saturation(-95,95)
-  control_b.set_saturation(-95,95)
+  control_a.set_K_P(0.007)
+  control_a.set_K_I(0)
+  control_a.set_K_D(0.012)
+  control_a.set_saturation(-20,20)
+  
+  control_b.set_K_P(1)
+  control_b.set_K_I(0)
+  control_b.set_K_D(0)
+  control_b.set_saturation(-40,40)
 
   # note the time
   last_time = time.ticks_us()
