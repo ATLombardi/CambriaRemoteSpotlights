@@ -13,26 +13,27 @@ class Controller:
     self.set_saturation(bottom,top)
     self.err_sum = 0
     self.err_win = 0
-    self.act_old = 0
+    self.err_old = 0
 
   # iterate on the control loop. This requires a setpoint goal,
   # an 'actual' reading from the targetted system, and the time
   # since the last iteration
-  def run (self, setpoint, actual, delta_t):
-    err = setpoint - actual
+  def run (self, setpoint, sensor, delta_t):
+    err = setpoint - sensor
 
     # proportional action
     errp = err * self.P
 
     # integral action
-    self.err_sum += (err * self.I) - (self.err_win * self.windup) / delta_t
+    self.err_sum += ( (err*self.I) - (self.err_win*self.windup) ) * delta_t
 
     # derivative action
-    err_der = (self.act_old - actual) * self.D * delta_t
-    self.act_old = actual
+    err_der = (err - self.err_old) * self.D / delta_t
+    self.err_old = err
 
     # evaluate total action
     act = errp + self.err_sum + err_der
+    print('P:',errp,' I:',self.err_sum,' D:',err_der,' t:',delta_t)
 
     self.err_win = act # storing this temporarily
 

@@ -9,7 +9,7 @@ import micropython
 micropython.alloc_emergency_exception_buf(100)
 
 # --"constants"--
-LOOP_DELAY = 10        # microseconds to sleep between main loops
+LOOP_DELAY = 1         # microseconds to sleep between main loops
 SER_BUS    = 6         # which hardware UART port is being used
 SER_BAUD   = 115200    # serial communication speed
 SIDE_TAG   = 'R'       # we're the right-side light
@@ -21,7 +21,7 @@ SERIAL_COUNT_LOOP = 10 # how many control loops per serial check
 MOT_ACT_EPSILON   =  5 # minimum motor effort until 
 
 # set to true to prevent entry into 'main' in case of resets during testing
-TEST_ENDURANCE = True
+TEST_ENDURANCE = False
 
 # shared objects
 serial    = None
@@ -77,12 +77,12 @@ def test_step (motor, setpoint):
       last_time = this_time
 
       new_pos = enc.Read()
-      v = new_pos - old_pos
-      old_pos = new_pos
+#      v = new_pos - old_pos
+#      old_pos = new_pos
 
       act = con.run(setpoint,new_pos,del_time)
     #  print('pos:',new_pos,'action:',act)
-      if ((SIDE_TAG == 'R') and (motor == 'A')):
+      if (motor == 'A'):
         act = act * -1 # flip the direction of A's rotation
       mot.set_speed(act)
       time.sleep_us(1)
@@ -180,8 +180,7 @@ def main ():
     zeroing_now = encoder_a.Read()
     # evaluate the clamped P controller (del_time isn't important when K_D is 0)
     speed = control_a.run(0,zeroing_now,100)
-    if (SIDE_TAG == 'R'):
-      speed = speed * -1 # flip the direction of A's rotation
+    speed = speed * -1 # flip the direction of A's rotation
     motor_a.set_speed( speed )
     zeroing_last = zeroing_now
   # finished, stop motor
@@ -200,14 +199,16 @@ def main ():
 #  motor_b.stop()
 
   # assign the actual values used during run time
-  control_a.set_K_P(0.010)
-  control_a.set_K_I(0)
-  control_a.set_K_D(0.020)
+  control_a.set_K_P(   0.010)
+  control_a.set_K_I(   0)
+  control_a.set_K_D(5000)
+  control_a.set_K_W(   0)
   control_a.set_saturation(-20,20)
   
   control_b.set_K_P(0.100)
   control_b.set_K_I(0)
   control_b.set_K_D(0.010)
+  control_b.set_K_W(0)
   control_b.set_saturation(-20,20)
 
   # note the time
@@ -220,7 +221,7 @@ def main ():
 
   setpoint_a = encoder_a.Read()
   setpoint_b = encoder_b.Read()
-
+  del_t_hic = 0
   # -- Enter Main Loop --
   while not serial.should_close():
     # determine loop speed
@@ -236,52 +237,60 @@ def main ():
 
     # read encoders
     new_pos_a = encoder_a.Read()
-    v_a = new_pos_a - old_pos_a
-    old_pos_a = new_pos_a
+#    v_a = new_pos_a - old_pos_a
+#    old_pos_a = new_pos_a
 
     new_pos_b = encoder_b.Read()
-    v_b = new_pos_b - old_pos_b
-    old_pos_b = new_pos_b
+#    v_b = new_pos_b - old_pos_b
+#    old_pos_b = new_pos_b
 
     # update serial feedback
 #    print ('a:',new_pos_a,' b:',new_pos_b)
     if (serial_count == SERIAL_COUNT_LOOP):
-      serial.refresh_reply(new_pos_a, new_pos_b)
-      serial.send_reply()
+#      serial.refresh_reply(new_pos_a, new_pos_b)
+#      serial.send_reply()
       serial_count = 0
     else:
       serial_count += 1
 
     # run controllers
-    act_a = control_a.run(setpoint_a,new_pos_a,del_time)
-    if (SIDE_TAG == 'R'):
-      act_a = act_a * -1 # flip the direction of A's rotation
+    # motor A needs to turn "backwards" WRT the encoder's positive
+    act_a = -1 * control_a.run(setpoint_a,new_pos_a,del_time)
+#    if (SIDE_TAG == 'R'):
+#      act_a = act_a * -1 # flip the direction of A's rotation
 
-    act_b = control_b.run(setpoint_b,new_pos_b,del_time)
+    act_b = 0#control_b.run(setpoint_b,new_pos_b,del_time)
 
-    if ((new_pos_a >= LIM_MAX_A) and (act_a > 0)):
-      act_a = 0
-    elif ((new_pos_a <= LIM_MIN_A) and (act_a < 0)):
-      act_a = 0
+    # soft limits on the motor's range of motion. Motor A is reversed
+#    if ((new_pos_a >= LIM_MAX_A) and (act_a < 0)):
+#      act_a = 0
+#    elif ((new_pos_a <= LIM_MIN_A) and (act_a > 0)):
+#      act_a = 0
 
     # soft limits to prevent going beyond safe ranges
-    if ((new_pos_b >= LIM_MAX_B) and (act_b > 0)):
-      act_b = 0
-    elif ((new_pos_b <= LIM_MIN_B) and (act_b < 0)):
-      act_b = 0
+#    if ((new_pos_b >= LIM_MAX_B) and (act_b > 0)):
+#      act_b = 0
+#    elif ((new_pos_b <= LIM_MIN_B) and (act_b < 0)):
+#      act_b = 0
 
-#    print('a:',act_a,' b:',act_b)
-    if (-MOT_ACT_EPSILON < act_a < MOT_ACT_EPSILON):
-      act_a = 0 # let's just cut this off, prevent rounding
-
-    if (-MOT_ACT_EPSILON < act_b < MOT_ACT_EPSILON):
-      act_b = 0
+    print('a:',act_a,' b:',act_b)
+#    if (-MOT_ACT_EPSILON < act_a < MOT_ACT_EPSILON):
+#      act_a = 0 # let's just cut this off, prevent rounding
+#
+#    if (-MOT_ACT_EPSILON < act_b < MOT_ACT_EPSILON):
+#      act_b = 0
 
     # apply results
     motor_a.set_speed(act_a)
     motor_b.set_speed(act_b)
 
     time.sleep_us(LOOP_DELAY)
+    if (del_time > 1500):
+#      l4.toggle()
+#      print('del_t:',del_time, 'hic:',del_t_hic)
+      del_t_hic = 0
+    else:
+      del_t_hic += 1
   # -- End Main Loop --
 
   # after the serial port tells us to shut down
@@ -296,7 +305,8 @@ def main ():
   time.sleep(1)
   logfile.close()
   print ('System stopped. Good night.')
-  
+
+  machine.soft_reset()
   # wait for serial connection signal
 
 # this will be true if the pyboard is running this file
