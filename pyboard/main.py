@@ -254,8 +254,8 @@ def main ():
     # update serial feedback
 #    print ('a:',new_pos_a,' b:',new_pos_b)
     if (serial_count == SERIAL_COUNT_LOOP):
-#      serial.refresh_reply(new_pos_a, new_pos_b)
-#      serial.send_reply()
+      serial.refresh_reply(new_pos_a, new_pos_b)
+      serial.send_reply()
       serial_count = 0
     else:
       serial_count += 1
