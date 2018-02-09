@@ -33,7 +33,7 @@ class Controller:
 
     # evaluate total action
     act = errp + self.err_sum + err_der
-    print('P:',errp,' I:',self.err_sum,' D:',err_der,' t:',delta_t)
+#    print('P:',errp,' I:',self.err_sum,' D:',err_der,' t:',delta_t)
 
     self.err_win = act # storing this temporarily
 

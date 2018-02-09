@@ -205,10 +205,10 @@ def main ():
   control_a.set_K_W(   0)
   control_a.set_saturation(-20,20)
   
-  control_b.set_K_P(0.100)
-  control_b.set_K_I(0)
-  control_b.set_K_D(0.010)
-  control_b.set_K_W(0)
+  control_b.set_K_P(   0.050)
+  control_b.set_K_I(   0)
+  control_b.set_K_D(5000)
+  control_b.set_K_W(   0)
   control_b.set_saturation(-20,20)
 
   # note the time
@@ -235,14 +235,21 @@ def main ():
       setpoint_a = serial.read_cmd(serial.CMD_SPA)
       setpoint_b = serial.read_cmd(serial.CMD_SPB)
 
+    # soft limits on the motor's range of motion. Motor A is reversed
+    if (setpoint_a >= LIM_MAX_A):
+      setpoint_a = LIM_MAX_A
+    elif (setpoint_a <= LIM_MIN_A):
+      setpoint_a = LIM_MIN_A
+
+    # soft limits to prevent going beyond safe ranges
+    if (setpoint_b >= LIM_MAX_B):
+      setpoint_b = LIM_MAX_B
+    elif (setpoint_b <= LIM_MIN_B):
+      setpoint_b = LIM_MIN_B
+
     # read encoders
     new_pos_a = encoder_a.Read()
-#    v_a = new_pos_a - old_pos_a
-#    old_pos_a = new_pos_a
-
     new_pos_b = encoder_b.Read()
-#    v_b = new_pos_b - old_pos_b
-#    old_pos_b = new_pos_b
 
     # update serial feedback
 #    print ('a:',new_pos_a,' b:',new_pos_b)
@@ -256,24 +263,9 @@ def main ():
     # run controllers
     # motor A needs to turn "backwards" WRT the encoder's positive
     act_a = -1 * control_a.run(setpoint_a,new_pos_a,del_time)
-#    if (SIDE_TAG == 'R'):
-#      act_a = act_a * -1 # flip the direction of A's rotation
+    act_b = control_b.run(setpoint_b,new_pos_b,del_time)
 
-    act_b = 0#control_b.run(setpoint_b,new_pos_b,del_time)
-
-    # soft limits on the motor's range of motion. Motor A is reversed
-#    if ((new_pos_a >= LIM_MAX_A) and (act_a < 0)):
-#      act_a = 0
-#    elif ((new_pos_a <= LIM_MIN_A) and (act_a > 0)):
-#      act_a = 0
-
-    # soft limits to prevent going beyond safe ranges
-#    if ((new_pos_b >= LIM_MAX_B) and (act_b > 0)):
-#      act_b = 0
-#    elif ((new_pos_b <= LIM_MIN_B) and (act_b < 0)):
-#      act_b = 0
-
-    print('a:',act_a,' b:',act_b)
+#    print('a:',act_a,' b:',act_b)
 #    if (-MOT_ACT_EPSILON < act_a < MOT_ACT_EPSILON):
 #      act_a = 0 # let's just cut this off, prevent rounding
 #
@@ -285,12 +277,6 @@ def main ():
     motor_b.set_speed(act_b)
 
     time.sleep_us(LOOP_DELAY)
-    if (del_time > 1500):
-#      l4.toggle()
-#      print('del_t:',del_time, 'hic:',del_t_hic)
-      del_t_hic = 0
-    else:
-      del_t_hic += 1
   # -- End Main Loop --
 
   # after the serial port tells us to shut down
