@@ -11,9 +11,11 @@ class Controller:
     self.set_K_D(D)
     self.set_K_W(W)
     self.set_saturation(bottom,top)
-    self.err_sum = 0
-    self.err_win = 0
-    self.err_old = 0
+    self.err_sum     = 0
+    self.err_win     = 0
+    self.err_old     = 0
+    self.report      = 0
+    self.err_avg_del = 0
 
   # iterate on the control loop. This requires a setpoint goal,
   # an 'actual' reading from the targetted system, and the time
@@ -28,13 +30,20 @@ class Controller:
     self.err_sum += ( (err*self.I) - (self.err_win*self.windup) ) * delta_t
 
     # derivative action
-    err_der = (err - self.err_old) * self.D / delta_t
-    self.err_old = err
+    # avg += (in - avg)/k, k = 2^n, n = number of samples
+    self.err_avg_del += ((err-self.err_old) - self.err_avg_del) /32
+    err_der = self.err_avg_del * self.D / delta_t
+    if (-1 < err_der < 1):
+      err_der = 0
 
     # evaluate total action
     act = errp + self.err_sum + err_der
-#    print('P:',errp,' I:',self.err_sum,' D:',err_der,' t:',delta_t)
-
+#    if (self.report == 0):
+#      print('P:',errp,' I:',self.err_sum,' D:',err_der,' t:',delta_t,' e:',err,' eo:',self.err_old)
+#      self.report = 10
+#    else:
+#      self.report -= 1
+    self.err_old = err
     self.err_win = act # storing this temporarily
 
     # saturation limits

@@ -16,7 +16,7 @@ SIDE_TAG   = 'R'       # we're the right-side light
 LIM_MAX_A  =  5000     # horizontal range max
 LIM_MIN_A  = -2000     # horizontal range min
 LIM_MAX_B  =  4000     # vertical range max
-LIM_MIN_B  = -4000     # vertical range min
+LIM_MIN_B  = -500     # vertical range min
 SERIAL_COUNT_LOOP = 10 # how many control loops per serial check
 MOT_ACT_EPSILON   =  5 # minimum motor effort until 
 
@@ -199,16 +199,16 @@ def main ():
 #  motor_b.stop()
 
   # assign the actual values used during run time
-  control_a.set_K_P(   0.010)
-  control_a.set_K_I(   0)
-  control_a.set_K_D(5000)
-  control_a.set_K_W(   0)
+  control_a.set_K_P(     0.200)
+  control_a.set_K_I(     0)
+  control_a.set_K_D(125000)
+  control_a.set_K_W(     0)
   control_a.set_saturation(-20,20)
-  
-  control_b.set_K_P(   0.050)
-  control_b.set_K_I(   0)
-  control_b.set_K_D(5000)
-  control_b.set_K_W(   0)
+
+  control_b.set_K_P(     0.070)
+  control_b.set_K_I(     0)
+  control_b.set_K_D( 50000)
+  control_b.set_K_W(     0)
   control_b.set_saturation(-20,20)
 
   # note the time
