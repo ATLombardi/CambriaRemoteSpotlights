@@ -111,14 +111,13 @@ class RS232:
       else:
         val = 0
 
-      # dump anything coming in after this as rubbish, it's fine
-      self.ser.reset_input_buffer()
-
       # store the result of the conversion
       if self.__state__ == 1:
         self.__inbox__[self.CMD_SPA] = val
       elif self.__state__ == 2:
         self.__inbox__[self.CMD_SPB] = val
+        # dump anything coming in after this as rubbish, it's fine
+        self.ser.reset_input_buffer()
 
       # return to state 0
 #      print ('IN:   side: ',self.__side__,'value: ',val)
