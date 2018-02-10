@@ -144,9 +144,9 @@ class RS232:
   # -- TO DO --
   def coord_to_enc (self, coord):
     if self.__side__ == 'L': # left-side spotlight
-      ret = coord # DO MATH HERE
+      ret = coord*2 # DO MATH HERE
     elif self.__side__ == 'R': # right-side spotlight
-      ret = coord # DO MATH HERE
+      ret = coord*2 # DO MATH HERE
     else:
       ret = coord*5
     return ret
@@ -155,12 +155,12 @@ class RS232:
   # -- TO DO --
   def enc_to_coord (self, enc):
     if self.__side__ == 'L':
-      ret = enc
+      ret = enc/2.0
     elif self.__side__ == 'R':
-      ret = enc
+      ret = enc/2.0
     else:
-      ret = int(enc/5)
-    return ret
+      ret = int(enc/5.0)
+    return int(ret)
 
   # send a new target position to the pyboard
   def send_command (self, pos_a, pos_b):

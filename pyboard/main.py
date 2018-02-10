@@ -18,7 +18,7 @@ LIM_MIN_A  = -2000     # horizontal range min
 LIM_MAX_B  =  4000     # vertical range max
 LIM_MIN_B  = -500     # vertical range min
 SERIAL_COUNT_LOOP = 100 # how many control loops per serial check
-MOT_ACT_EPSILON   =  5 # minimum motor effort until 
+FILTER_DIV =  256     # make this 2^N, where N is a number of samples
 
 # set to true to prevent entry into 'main' in case of resets during testing
 TEST_ENDURANCE = False
@@ -50,7 +50,7 @@ def test_enc (encoder):
       time.sleep_us(1)
 # /end test_enc
 
-def test_step (motor, setpoint):
+def test_step (motor, setpoint, filter=0):
   enc = None
   mot = None
   con = None
@@ -70,17 +70,24 @@ def test_step (motor, setpoint):
   print ('stepping motor',motor,'from',old_pos,'to',setpoint)
   mot.enable()
   last_time = time.ticks_us()
+  avg_setpoint = old_pos
   try:
     while True:
       this_time = time.ticks_us()
       del_time  = time.ticks_diff(this_time, last_time)
       last_time = this_time
 
+      if (not (filter == 0)):
+        # setpoint filtering. This makes it more of a ramp input
+        avg_setpoint += (setpoint - avg_setpoint) / filter
+      else:
+        avg_setpoint = setpoint
+
       new_pos = enc.Read()
 #      v = new_pos - old_pos
 #      old_pos = new_pos
 
-      act = con.run(setpoint,new_pos,del_time)
+      act = con.run(avg_setpoint, new_pos, del_time)
     #  print('pos:',new_pos,'action:',act)
       if (motor == 'A'):
         act = act * -1 # flip the direction of A's rotation
@@ -199,10 +206,10 @@ def main ():
 #  motor_b.stop()
 
   # assign the actual values used during run time
-  control_a.set_K_P(     0.200)
-  control_a.set_K_I(     0)
+  control_a.set_K_P(     0.2)
+  control_a.set_K_I(     0)#.0000005)
   control_a.set_K_D( 25000)
-  control_a.set_K_W(     0)
+  control_a.set_K_W(     0)#.0000050)
   control_a.set_saturation(-20,20)
 
   control_b.set_K_P(     0.070)
@@ -221,6 +228,10 @@ def main ():
 
   setpoint_a = encoder_a.Read()
   setpoint_b = encoder_b.Read()
+  
+  avg_setpoint_a = setpoint_a
+  avg_setpoint_b = setpoint_b
+  
   del_t_hic = 0
   # -- Enter Main Loop --
   while not serial.should_close():
@@ -234,7 +245,7 @@ def main ():
       serial.update_cmds()
       setpoint_a = serial.read_cmd(serial.CMD_SPA)
       setpoint_b = serial.read_cmd(serial.CMD_SPB)
-      print('A: ',setpoint_a,' B: ',setpoint_b)
+#      print('A: ',setpoint_a,' B: ',setpoint_b)
 
     # soft limits on the motor's range of motion. Motor A is reversed
     if (setpoint_a >= LIM_MAX_A):
@@ -247,6 +258,10 @@ def main ():
       setpoint_b = LIM_MAX_B
     elif (setpoint_b <= LIM_MIN_B):
       setpoint_b = LIM_MIN_B
+
+    # setpoint rolling average to smooth out the commands
+    avg_setpoint_a += (setpoint_a - avg_setpoint_a) / FILTER_DIV
+    avg_setpoint_b += (setpoint_b - avg_setpoint_b) / FILTER_DIV
 
     # read encoders
     new_pos_a = encoder_a.Read()
@@ -263,8 +278,8 @@ def main ():
 
     # run controllers
     # motor A needs to turn "backwards" WRT the encoder's positive
-    act_a = -1 * control_a.run(setpoint_a,new_pos_a,del_time)
-    act_b = control_b.run(setpoint_b,new_pos_b,del_time)
+    act_a = -1 * control_a.run(avg_setpoint_a, new_pos_a, del_time)
+    act_b =      control_b.run(avg_setpoint_b, new_pos_b, del_time)
 
 #    print('a:',act_a,' b:',act_b)
 #    if (-MOT_ACT_EPSILON < act_a < MOT_ACT_EPSILON):
