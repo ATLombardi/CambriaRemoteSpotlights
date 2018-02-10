@@ -7,14 +7,14 @@ from graphics import *
 from entity_spotlight import *
 from comms import *
 
-import pygame                # for rendering
-from threading import Thread # for the serial comms monitor
+import pygame                      # for rendering
+from threading import Thread, Lock # for the serial comms monitor
 
 # this defines how tall the on-screen buttons are
 BUTTON_HEIGHT = 50
 
-mail_a_lock = threading.Lock()
-mail_b_lock = threading.Lock()
+mail_a_lock = Lock()
+mail_b_lock = Lock()
 
 # continually updates a serial inbox. Don't use in the main thread!
 class MailboxMonitor:
@@ -76,8 +76,8 @@ def main ():
   target_r = spot_r.get_target()
 
   # these handle updating serial data incoming
-  a_monitor = MailboxMonitor(ser_a)
-  b_monitor = MailboxMonitor(ser_b)
+  a_monitor = MailboxMonitor(ser_a, mail_a_lock)
+  b_monitor = MailboxMonitor(ser_b, mail_b_lock)
 
   # threads to wrap the monitors, lets them run parallel to the main loop
   a_monitor_thread = Thread(target=a_monitor.run)
@@ -137,18 +137,22 @@ def main ():
   try:
     while not should_stop:
       # build a Point where the light says it is
-      with mail_a_lock:
+      if (not mail_a_lock.locked()):
+        mail_a_lock.acquire()
         a_point = Point (
           ser_a.read_inbox(ser_a.CMD_SPA),
           ser_a.read_inbox(ser_a.CMD_SPB)
         )
+        mail_a_lock.release()
 #      print (a_point.get_x(), ',', a_point.get_y())
 
-      with mail_b_lock:
+      if (not mail_b_lock.locked()):
+        mail_b_lock.acquire()
         b_point = Point (
           ser_b.read_inbox(ser_b.CMD_SPA),
           ser_b.read_inbox(ser_b.CMD_SPB)
         )
+        mail_b_lock.release()
 
       # if spotlight A is on the left
       if ser_a.get_side() == 'L':
