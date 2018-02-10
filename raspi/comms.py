@@ -48,7 +48,7 @@ class RS232:
     # flush the buffer, deleting everything in it
     self.ser.reset_input_buffer()
     # ask the pyboard to verify its side
-#    self.send('?')
+    self.send('?,\n')
 
   # call this when the serial port should be shut down
   def close (self):
