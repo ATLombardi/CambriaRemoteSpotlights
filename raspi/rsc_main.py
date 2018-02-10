@@ -13,11 +13,15 @@ from threading import Thread # for the serial comms monitor
 # this defines how tall the on-screen buttons are
 BUTTON_HEIGHT = 50
 
+mail_a_lock = threading.Lock()
+mail_b_lock = threading.Lock()
+
 # continually updates a serial inbox. Don't use in the main thread!
 class MailboxMonitor:
-  def __init__ (self, mailbox):
+  def __init__ (self, mailbox, lock):
     self.__running = True
     self.m = mailbox
+    self.lock = lock
 
   def terminate (self):
     self.__running = False
@@ -27,7 +31,8 @@ class MailboxMonitor:
       # this is a blocking function, so we just run it without delays
       # being in its own thread has benefits
       try:
-        self.m.update_inbox()
+        with self.lock:
+          self.m.update_inbox()
       except SerialException as se:
         print ('Serial error: ', se)
 # /MailboxMonitor
@@ -124,21 +129,26 @@ def main ():
 
   # turn on touch events now, we are ready
   touch.active (True)
+  
+  a_point = Point(0,0)
+  b_point = Point(0,0)
 
   print ("Start-up done. Running...")
   try:
     while not should_stop:
       # build a Point where the light says it is
-      a_point = Point (
-        ser_a.read_inbox(ser_a.CMD_SPA),
-        ser_a.read_inbox(ser_a.CMD_SPB)
-      )
+      with mail_a_lock:
+        a_point = Point (
+          ser_a.read_inbox(ser_a.CMD_SPA),
+          ser_a.read_inbox(ser_a.CMD_SPB)
+        )
 #      print (a_point.get_x(), ',', a_point.get_y())
 
-      b_point = Point (
-        ser_b.read_inbox(ser_b.CMD_SPA),
-        ser_b.read_inbox(ser_b.CMD_SPB)
-      )
+      with mail_b_lock:
+        b_point = Point (
+          ser_b.read_inbox(ser_b.CMD_SPA),
+          ser_b.read_inbox(ser_b.CMD_SPB)
+        )
 
       # if spotlight A is on the left
       if ser_a.get_side() == 'L':
