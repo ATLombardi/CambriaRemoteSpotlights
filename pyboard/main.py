@@ -17,7 +17,7 @@ LIM_MAX_A  =  5000     # horizontal range max
 LIM_MIN_A  = -2000     # horizontal range min
 LIM_MAX_B  =  4000     # vertical range max
 LIM_MIN_B  = -500     # vertical range min
-SERIAL_COUNT_LOOP = 10 # how many control loops per serial check
+SERIAL_COUNT_LOOP = 100 # how many control loops per serial check
 MOT_ACT_EPSILON   =  5 # minimum motor effort until 
 
 # set to true to prevent entry into 'main' in case of resets during testing
@@ -201,7 +201,7 @@ def main ():
   # assign the actual values used during run time
   control_a.set_K_P(     0.200)
   control_a.set_K_I(     0)
-  control_a.set_K_D(125000)
+  control_a.set_K_D( 25000)
   control_a.set_K_W(     0)
   control_a.set_saturation(-20,20)
 
@@ -234,6 +234,7 @@ def main ():
       serial.update_cmds()
       setpoint_a = serial.read_cmd(serial.CMD_SPA)
       setpoint_b = serial.read_cmd(serial.CMD_SPB)
+      print('A: ',setpoint_a,' B: ',setpoint_b)
 
     # soft limits on the motor's range of motion. Motor A is reversed
     if (setpoint_a >= LIM_MAX_A):

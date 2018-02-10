@@ -73,7 +73,7 @@ class Serial:
           self.__state__ = 2
 #          print('moving to state B')
         elif dat == b'?': # identity request
-          self.__reply__[self.CMD_ACK] = self.side_tag
+          self.send(self.side_tag)
         elif dat == b'K': # shutdown alert
           self.__flag_down__ = True
           self.send('Z') # we've been told to shut down, reply with rubbish
@@ -132,6 +132,7 @@ class Serial:
   def refresh_reply (self, ra, rb):
     self.__reply__[self.CMD_SPA] = '{:+06}'.format(ra)
     self.__reply__[self.CMD_SPB] = '{:+06}'.format(rb)
+    self.__reply__[self.CMD_ACK] = self.side_tag
 #    print('built:',self.__reply__)
 
   # send a reply to the master
@@ -139,7 +140,6 @@ class Serial:
     if self.__flag_reply__:
       for x in range (len(self.__reply__)):
         self.send(self.__reply__[x])
-        self.__reply__[self.CMD_ACK] = ' '
         self.__flag_reply__ = False;
 #        print ('replied')
 
