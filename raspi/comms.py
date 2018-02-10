@@ -135,7 +135,7 @@ class RS232:
       ret = self.__inbox__[self.CMD_ACK]
     else:
       ret = 0
-    print('READ: side: ',self.__side__,'val: ',ret)
+#    print('READ: side: ',self.__side__,'val: ',ret)
     return ret
 
   # translate screen coordinates into encoder counts
