@@ -120,6 +120,7 @@ class RS232:
 
   # return a piece of data from the buffer
   def read_inbox (self, index):
+    print('side: ',self.__side__)
     if index == self.CMD_SPA:
       ret = self.__inbox__[self.CMD_SPA]
       ret = self.enc_to_coord(int(ret))
