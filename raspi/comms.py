@@ -7,16 +7,16 @@ from time import sleep # for delaying
 
 class RS232:
   # track what we're processing inputs for
-  __state__  = 0
+#  __state__  = 0
 
   # track whether we should send a reply
-  __flag_reply__ = True
+#  __flag_reply__ = True
 
   # stores which side the pyboard is on (L or R)
-  __side__   = '?'
+#  __side__   = '?'
 
   # buffer for incoming data
-  __inbox__  = [' ','A','+000','B','+000']
+#  __inbox__  = [' ','A','+000','B','+000']
 
   # command index 'constants'
   CMD_SPA = 2
@@ -42,6 +42,10 @@ class RS232:
       stopbits=stop,
       bytesize=bytesize
     )
+    self.__state__  = 0
+    self.__flag_reply__ = True
+    self.__side__   = '?'
+    self.__inbox__  = [' ','A','+000','B','+000']
     # check that the connection worked
     if not self.ser.isOpen():
       self.ser.open()
