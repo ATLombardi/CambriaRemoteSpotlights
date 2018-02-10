@@ -9,6 +9,7 @@ from comms import *
 
 import pygame                      # for rendering
 from threading import Thread, Lock # for the serial comms monitor
+from time import sleep             # for delaying threads
 
 # this defines how tall the on-screen buttons are
 BUTTON_HEIGHT = 50
@@ -33,6 +34,7 @@ class MailboxMonitor:
       try:
         with self.lock:
           self.m.update_inbox()
+        sleep(0.0001) # I doubt this is accurate, but it doesn't matter
       except SerialException as se:
         print ('Serial error: ', se)
 # /MailboxMonitor
