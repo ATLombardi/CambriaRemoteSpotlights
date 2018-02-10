@@ -111,6 +111,9 @@ class RS232:
       else:
         val = 0
 
+      # dump anything coming in after this as rubbish, it's fine
+      self.ser.reset_input_buffer()
+
       # store the result of the conversion
       if self.__state__ == 1:
         self.__inbox__[self.CMD_SPA] = val
@@ -118,7 +121,7 @@ class RS232:
         self.__inbox__[self.CMD_SPB] = val
 
       # return to state 0
-      print ('IN:   side: ',self.__side__,'value: ',val)
+#      print ('IN:   side: ',self.__side__,'value: ',val)
       self.__state__ = 0
       # indicate that we can reply now
       self.__flag_reply__ = True
