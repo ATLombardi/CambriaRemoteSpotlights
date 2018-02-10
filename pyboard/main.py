@@ -18,7 +18,7 @@ LIM_MIN_A  = -2000     # horizontal range min
 LIM_MAX_B  =  4000     # vertical range max
 LIM_MIN_B  = -500     # vertical range min
 SERIAL_COUNT_LOOP = 100 # how many control loops per serial check
-FILTER_DIV =  256     # make this 2^N, where N is a number of samples
+FILTER_DIV =  512     # make this 2^N, where N is a number of samples
 
 # set to true to prevent entry into 'main' in case of resets during testing
 TEST_ENDURANCE = False
@@ -207,9 +207,9 @@ def main ():
 
   # assign the actual values used during run time
   control_a.set_K_P(     0.2)
-  control_a.set_K_I(     0)#.0000005)
+  control_a.set_K_I(     0)
   control_a.set_K_D( 25000)
-  control_a.set_K_W(     0)#.0000050)
+  control_a.set_K_W(     0)
   control_a.set_saturation(-20,20)
 
   control_b.set_K_P(     0.070)
@@ -262,6 +262,8 @@ def main ():
     # setpoint rolling average to smooth out the commands
     avg_setpoint_a += (setpoint_a - avg_setpoint_a) / FILTER_DIV
     avg_setpoint_b += (setpoint_b - avg_setpoint_b) / FILTER_DIV
+
+    print ('A: New: ',setpoint_a,' Avg: ',avg_setpoint_a)
 
     # read encoders
     new_pos_a = encoder_a.Read()
