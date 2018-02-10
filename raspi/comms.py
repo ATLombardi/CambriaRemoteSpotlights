@@ -114,13 +114,13 @@ class RS232:
         self.__inbox__[self.CMD_SPB] = val
 
       # return to state 0
+      print ('value: ',val)
       self.__state__ = 0
       # indicate that we can reply now
       self.__flag_reply__ = True
 
   # return a piece of data from the buffer
   def read_inbox (self, index):
-    print('side: ',self.__side__)
     if index == self.CMD_SPA:
       ret = self.__inbox__[self.CMD_SPA]
       ret = self.enc_to_coord(int(ret))
@@ -131,6 +131,7 @@ class RS232:
       ret = self.__inbox__[self.CMD_ACK]
     else:
       ret = 0
+    print('READ: side: ',self.__side__,'val: ',ret)
     return ret
 
   # translate screen coordinates into encoder counts
