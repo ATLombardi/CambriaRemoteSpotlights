@@ -40,7 +40,7 @@ def main ():
   print ("init serial...")
   try:
     ser_a = RS232('/dev/ttyUSB0',115200)
-#    ser_b = RS232('/dev/ttyUSB1',115200)
+    ser_b = RS232('/dev/ttyUSB1',115200)
   except:
     print ("Error when trying to connect to serial ports!")
 
@@ -72,11 +72,11 @@ def main ():
 
   # these handle updating serial data incoming
   a_monitor = MailboxMonitor(ser_a)
-#  b_monitor = MailboxMonitor(ser_b)
+  b_monitor = MailboxMonitor(ser_b)
 
   # threads to wrap the monitors, lets them run parallel to the main loop
   a_monitor_thread = Thread(target=a_monitor.run)
-#  b_monitor_thread = Thread(target=b_monitor.run)
+  b_monitor_thread = Thread(target=b_monitor.run)
 
   print ("done.") # with touch stuff
 
@@ -120,7 +120,7 @@ def main ():
 
   # inboxes will be updated in separate threads
   a_monitor_thread.start()
-#  b_monitor_thread.start()
+  b_monitor_thread.start()
 
   # turn on touch events now, we are ready
   touch.active (True)
@@ -135,19 +135,19 @@ def main ():
       )
 #      print (a_point.get_x(), ',', a_point.get_y())
 
-#      b_point = Point (
-#        ser_b.read_inbox(ser_b.CMD_SPA),
-#        ser_b.read_inbox(ser_b.CMD_SPB)
-#      )
+      b_point = Point (
+        ser_b.read_inbox(ser_b.CMD_SPA),
+        ser_b.read_inbox(ser_b.CMD_SPB)
+      )
 
       # if spotlight A is on the left
       if ser_a.get_side() == 'L':
         # get spotlight positions in relative, convert to abs coords
         spot_l.move_to(a_point.add(spot_l.get_home()))
-#        spot_r.move_to(b_point.add(spot_r.get_home()))
+        spot_r.move_to(b_point.add(spot_r.get_home()))
       else:
         spot_r.move_to(a_point.add(spot_r.get_home()))
-#        spot_l.move_to(b_point.add(spot_r.get_home()))
+        spot_l.move_to(b_point.add(spot_l.get_home()))
 
       # get current location of each light
       pos_l = spot_l.get_location()
@@ -189,10 +189,10 @@ def main ():
       # send the target values to the lights
       if ser_a.get_side() == 'L':
         ser_a.send_command(rel_l.get_x(), rel_l.get_y())
-#        ser_b.send_command(rel_r.get_x(), rel_r.get_y())
+        ser_b.send_command(rel_r.get_x(), rel_r.get_y())
       else:
         ser_a.send_command(rel_r.get_x(), rel_r.get_y())
-#        ser_b.send_command(rel_l.get_x(), rel_l.get_y())
+        ser_b.send_command(rel_l.get_x(), rel_l.get_y())
 
       # actually do rendering, starting with the background
 #      screen.fill( (255,255,255) )
@@ -265,11 +265,11 @@ def main ():
     # turn off these events and release the threads
     touch.active(False)
     a_monitor.terminate()
-#    b_monitor.terminate()
+    b_monitor.terminate()
     ser_a.close()
-#    ser_b.close()
+    ser_b.close()
     a_monitor_thread.join()
-#    b_monitor_thread.join()
+    b_monitor_thread.join()
     print ("Exit reason: ", exit_reason_number)
     # and finally, bail out
     exit (exit_reason_number)
