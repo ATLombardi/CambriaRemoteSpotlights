@@ -114,7 +114,7 @@ class RS232:
         self.__inbox__[self.CMD_SPB] = val
 
       # return to state 0
-      print ('value: ',val)
+      print ('IN:   side: ',self.__side__,'value: ',val)
       self.__state__ = 0
       # indicate that we can reply now
       self.__flag_reply__ = True
