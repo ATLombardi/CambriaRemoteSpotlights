@@ -26,25 +26,34 @@ TEST_ENDURANCE = False
 # shared objects
 serial    = None
 
+enc_z_a   = None
 encoder_a = None
 motor_a   = None
 control_a = None
 
+enc_z_b   = None
 encoder_b = None
 motor_b   = None
 control_b = None
 
 def test_enc (encoder):
   enc = None
+  enz = None
   old = 0
   if (encoder == 'A'):
     enc = encoder_a
+    enz = enc_z_a
   else:
     enc = encoder_b
+    enz = enc_z_b
   enc.Zero()
   while True:
     val = enc.Read()
     if (not (val == old)):
+      if (enz.value()):
+        enc.Zero()
+        val = 0
+        print('zeroed!')
       print(val)
       old = val
       time.sleep_us(1)
@@ -125,6 +134,12 @@ def init ():
   encoder_a = sensors.Encoder(pyb.Timer(2), pyb.Pin.board.X4,  pyb.Pin.board.X3)
   global encoder_b
   encoder_b = sensors.Encoder(pyb.Timer(4), pyb.Pin.board.X10, pyb.Pin.board.X9)
+
+  # encoder zero indices
+  global enc_z_a
+  enc_z_a = pyb.Pin(pyb.Pin.board.X2, pyb.Pin.IN)
+  global enc_z_b
+  enc_z_b = pyb.Pin(pyb.Pin.board.Y8, pyb.Pin.IN)
 
   # motor drivers
   global motor_a
