@@ -2,8 +2,9 @@
 ## Wrapper for the USB to RS-232 serial converters ##
 
 import serial
-import re # regex library
-from time import sleep # for delaying
+import re                 # regex library
+from time import sleep    # for delaying
+import math               # for coordinate mapping calcs
 
 class RS232:
   # track what we're processing inputs for
@@ -145,14 +146,14 @@ class RS232:
   def coord_to_enc (self, coord, is_x=True):
     if self.__side__ == 'L': # left-side spotlight
       if (is_x): # X-coordinate
-        ret = coord*2
+        ret = coord * -2
       else:      # Y-coordinate
-        ret = coord*4 
+        ret = coord**2 
     elif self.__side__ == 'R': # right-side spotlight
       if (is_x): # X-coordinate
-        ret = coord*2
+        ret = coord * -2
       else:      # Y-coordinate
-        ret = coord*4
+        ret = coord**2
     else:
       ret = coord
     return ret
@@ -162,14 +163,14 @@ class RS232:
   def enc_to_coord (self, enc, is_x=True):
     if self.__side__ == 'L':
       if (is_x): # X-coord
-        ret = enc/2.0
+        ret = enc / -2.0
       else:      # Y-coord
-        ret = enc/4.0
+        ret = math.sqrt(enc)
     elif self.__side__ == 'R':
       if (is_x): # X-coord
-        ret = enc/2.0
+        ret = enc / -2.0
       else:      # Y-coord
-        ret = enc/4.0
+        ret = math.sqrt(enc)
     else:
       ret = enc
     return int(ret)
