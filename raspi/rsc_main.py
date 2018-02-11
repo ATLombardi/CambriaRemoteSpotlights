@@ -96,7 +96,7 @@ def main ():
   window_h = display_info.current_h;
   print ("window is:",window_w,",",window_h)
   # prepare the screen
-  screen = pygame.display.set_mode( (0,0), pygame.FULLSCREEN)
+  screen = pygame.display.set_mode( (0,0)) #, pygame.FULLSCREEN)
 #  pygame.mouse.set_visible(False)
   pygame.display.set_caption('Spotlight Controls')
   bg = Background('/home/pi/Pictures/stage.jpg',

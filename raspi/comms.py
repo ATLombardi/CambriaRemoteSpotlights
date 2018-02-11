@@ -151,38 +151,42 @@ class RS232:
       if (is_x): # X-coordinate
         ret = coord * -2
       else:      # Y-coordinate
-        ret = 0.0005 * coord ** 3 #coord * abs(coord) 
+        ret = 0.0005 * (coord ** 3) #coord * abs(coord) #coord ** 2.0
     elif self.__side__ == 'R': # right-side spotlight
       if (is_x): # X-coordinate
         ret = coord * -2
       else:      # Y-coordinate
-        ret = 0.0005 * coord ** 3 #coord * abs(coord)
+        ret = 0.0005 * (coord ** 3) #coord * abs(coord) #coord ** 2.0
     else:
       ret = coord
-    return ret
+#    print('->enc:',ret)
+    return round(ret)
 
   # translate encoder counts into screen coordinates
   # -- TO DO --
   def enc_to_coord (self, enc, is_x=True):
+    print('->conv:',enc)
     if self.__side__ == 'L':
       if (is_x): # X-coord
         ret = enc / -2.0
       else:      # Y-coord
-        ret = (enc ** (1/3.0)) / 0.0005 #sign(enc) * math.sqrt(abs(enc))
+        ret = sign(enc) * ((abs(enc) / 0.0005) ** (1/3.0)) #sign(enc) * math.sqrt(abs(enc))
     elif self.__side__ == 'R':
       if (is_x): # X-coord
         ret = enc / -2.0
       else:      # Y-coord
-        ret = (enc ** (1/3.0)) / 0.0005 #sign(enc) * math.sqrt(abs(enc))
+        ret = sign(enc) * ((abs(enc) / 0.0005) ** (1/3.0)) #sign(enc) * math.sqrt(abs(enc))
     else:
       ret = enc
-    return int(ret)
+    print('screen<-:',ret)
+    return round(ret)
 
   # send a new target position to the pyboard
   def send_command (self, pos_a, pos_b):
     if self.__flag_reply__:
       cmd_a = self.coord_to_enc (pos_a, is_x=True)
       cmd_b = self.coord_to_enc (pos_b, is_x=False)
+#      print(self.__side__+'A'+'{:+04}'.format(cmd_a)+','+'B'+'{:+04}'.format(cmd_b))
       self.send ( 'A'+'{:+04}'.format(cmd_a)+','+'B'+'{:+04}'.format(cmd_b)+',\n' )
       self.__flag_reply__ = False
 
