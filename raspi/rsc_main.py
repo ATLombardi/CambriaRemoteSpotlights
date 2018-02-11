@@ -117,7 +117,7 @@ def main ():
     Rectangle(       3*button_width+7,0, button_width,BUTTON_HEIGHT, color=( 60,140,240), text='Home Right')
   )
 
-#  clock = pygame.time.Clock()
+  clock = pygame.time.Clock()
   print ("done.") # with pygame/render stuff
 
   # easy way to stop cleanly from inside loop
@@ -266,7 +266,7 @@ def main ():
         elif event.type == pygame.MOUSEBUTTONUP:
           is_mouse_pressed = False
 
-#      clock.tick (240)
+      clock.tick (60) # limit framerate
 
   # handle exits cleanly
   except KeyboardInterrupt:

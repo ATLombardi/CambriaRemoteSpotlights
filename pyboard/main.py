@@ -263,7 +263,7 @@ def main ():
     avg_setpoint_a += (setpoint_a - avg_setpoint_a) / FILTER_DIV
     avg_setpoint_b += (setpoint_b - avg_setpoint_b) / FILTER_DIV
 
-    print ('A: New: ',setpoint_a,' Avg: ',avg_setpoint_a)
+#    print ('A: New: ',setpoint_a,' Avg: ',avg_setpoint_a)
 
     # read encoders
     new_pos_a = encoder_a.Read()

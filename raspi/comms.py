@@ -129,10 +129,10 @@ class RS232:
   def read_inbox (self, index):
     if index == self.CMD_SPA:
       ret = self.__inbox__[self.CMD_SPA]
-      ret = self.enc_to_coord(int(ret))
+      ret = self.enc_to_coord(int(ret), is_x=True)
     elif index == self.CMD_SPB:
       ret = self.__inbox__[self.CMD_SPB]
-      ret = self.enc_to_coord(int(ret))
+      ret = self.enc_to_coord(int(ret), is_x=False)
     elif index == self.CMD_ACK:
       ret = self.__inbox__[self.CMD_ACK]
     else:
@@ -142,31 +142,43 @@ class RS232:
 
   # translate screen coordinates into encoder counts
   # -- TO DO --
-  def coord_to_enc (self, coord):
+  def coord_to_enc (self, coord, is_x=True):
     if self.__side__ == 'L': # left-side spotlight
-      ret = coord*2 # DO MATH HERE
+      if (is_x): # X-coordinate
+        ret = coord*2
+      else:      # Y-coordinate
+        ret = coord*4 
     elif self.__side__ == 'R': # right-side spotlight
-      ret = coord*2 # DO MATH HERE
+      if (is_x): # X-coordinate
+        ret = coord*2
+      else:      # Y-coordinate
+        ret = coord*4
     else:
-      ret = coord*5
+      ret = coord
     return ret
 
   # translate encoder counts into screen coordinates
   # -- TO DO --
-  def enc_to_coord (self, enc):
+  def enc_to_coord (self, enc, is_x=True):
     if self.__side__ == 'L':
-      ret = enc/2.0
+      if (is_x): # X-coord
+        ret = enc/2.0
+      else:      # Y-coord
+        ret = enc/4.0
     elif self.__side__ == 'R':
-      ret = enc/2.0
+      if (is_x): # X-coord
+        ret = enc/2.0
+      else:      # Y-coord
+        ret = enc/4.0
     else:
-      ret = int(enc/5.0)
+      ret = enc
     return int(ret)
 
   # send a new target position to the pyboard
   def send_command (self, pos_a, pos_b):
     if self.__flag_reply__:
-      cmd_a = self.coord_to_enc (pos_a)
-      cmd_b = self.coord_to_enc (pos_b)
+      cmd_a = self.coord_to_enc (pos_a, is_x=True)
+      cmd_b = self.coord_to_enc (pos_b, is_x=False)
       self.send ( 'A'+'{:+04}'.format(cmd_a)+','+'B'+'{:+04}'.format(cmd_b)+',\n' )
       self.__flag_reply__ = False
 
