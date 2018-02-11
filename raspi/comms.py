@@ -151,12 +151,12 @@ class RS232:
       if (is_x): # X-coordinate
         ret = coord * -2
       else:      # Y-coordinate
-        ret = coord**2 
+        ret = coord * abs(coord) 
     elif self.__side__ == 'R': # right-side spotlight
       if (is_x): # X-coordinate
         ret = coord * -2
       else:      # Y-coordinate
-        ret = coord**2
+        ret = coord * abs(coord)
     else:
       ret = coord
     return ret
