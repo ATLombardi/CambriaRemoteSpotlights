@@ -6,6 +6,9 @@ import re                 # regex library
 from time import sleep    # for delaying
 import math               # for coordinate mapping calcs
 
+# math library doesn't have this, sadly
+sign = lambda x: x and (1, -1)[x < 0]
+
 class RS232:
   # track what we're processing inputs for
 #  __state__  = 0
@@ -165,12 +168,12 @@ class RS232:
       if (is_x): # X-coord
         ret = enc / -2.0
       else:      # Y-coord
-        ret = math.sqrt(enc)
+        ret = sign(enc) * math.sqrt(abs(enc))
     elif self.__side__ == 'R':
       if (is_x): # X-coord
         ret = enc / -2.0
       else:      # Y-coord
-        ret = math.sqrt(enc)
+        ret = sign(enc) * math.sqrt(abs(enc))
     else:
       ret = enc
     return int(ret)
