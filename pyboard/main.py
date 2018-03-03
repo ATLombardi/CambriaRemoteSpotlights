@@ -9,48 +9,55 @@ import micropython
 micropython.alloc_emergency_exception_buf(100)
 
 # --"constants"--
-LOOP_DELAY = 1         # microseconds to sleep between main loops
-SER_BUS    = 6         # which hardware UART port is being used
-SER_BAUD   = 115200    # serial communication speed
-SIDE_TAG   = 'R'       # we're the right-side light
-LIM_MAX_A  =  5000     # horizontal range max
-LIM_MIN_A  = -2000     # horizontal range min
-LIM_MAX_B  =  4000     # vertical range max
-LIM_MIN_B  = -500     # vertical range min
+LOOP_DELAY = 1          # microseconds to sleep between main loops
+SER_BUS    = 6          # which hardware UART port is being used
+SER_BAUD   = 115200     # serial communication speed
+SIDE_TAG   = 'R'        # we're the right-side light
+LIM_MAX_A  =  5000      # horizontal range max
+LIM_MIN_A  = -2000      # horizontal range min
+LIM_MAX_B  =  4000      # vertical range max
+LIM_MIN_B  = -500       # vertical range min
 SERIAL_COUNT_LOOP = 100 # how many control loops per serial check
-FILTER_DIV =  512     # make this 2^N, where N is a number of samples
+FILTER_DIV =  512       # make this 2^N, where N is a number of samples
 
 # set to true to prevent entry into 'main' in case of resets during testing
-TEST_ENDURANCE = False
+TEST_ENDURANCE = True
 
-# shared objects
-serial    = None
+# shared objects, initialized elsewhere
+serial    = None # comms.py/Serial object
 
-enc_z_a   = None
-encoder_a = None
-motor_a   = None
-control_a = None
+enc_z_a    = None # zero-index pin
+ext_a      = None # zero-index interrupt
+ext_a_trig = False # set to true by the interrupt
+encoder_a  = None # sensors.py/Encoder object
+motor_a    = None # elechouse.py/Driver object
+control_a  = None # pid.py/Controller object
 
-enc_z_b   = None
-encoder_b = None
-motor_b   = None
-control_b = None
+enc_z_b    = None
+ext_b      = None
+ext_b_trig = False
+encoder_b  = None
+motor_b    = None
+control_b  = None
 
 def test_enc (encoder):
   enc = None
   enz = None
+  zero_trigger = None
   old = 0
   if (encoder == 'A'):
     enc = encoder_a
     enz = enc_z_a
+    zero_trigger = ext_a_trig
   else:
     enc = encoder_b
     enz = enc_z_b
+    zero_trigger = ext_b_trig
   enc.Zero()
   while True:
     val = enc.Read()
     if (not (val == old)):
-      if (enz.value()):
+      if (zero_trigger):
         enc.Zero()
         val = 0
         print('zeroed!')
@@ -122,6 +129,15 @@ def test_con (controller, P,I,D,satmin,satmax):
   con.set_saturation(satmin,satmax)
 # /end test_con
 
+# helper method for use in lambdas (see interrupts below)
+def set_trigger_a (value=True):
+  global ext_a_trig
+  ext_a_trig = value
+
+def set_trigger_b (value=True):
+  global ext_b_trig
+  ext_b_trig = value
+
 def init ():
   # -- set Up Systems --
   # serial port
@@ -140,6 +156,22 @@ def init ():
   enc_z_a = pyb.Pin(pyb.Pin.board.X2, pyb.Pin.IN)
   global enc_z_b
   enc_z_b = pyb.Pin(pyb.Pin.board.Y8, pyb.Pin.IN)
+  
+  # zero index interrupts
+  global ext_a
+  ext_a = pyb.ExtInt(
+    pyb.Pin('X2'),
+    pyb.ExtInt.IRQ_RISING,
+    pyb.Pin.PULL_NONE,
+    lambda a:set_trigger_a()
+  )
+  global ext_b  
+  ext_b = pyb.ExtInt(
+    pyb.Pin('Y8'),
+    pyb.ExtInt.IRQ_RISING,
+    pyb.Pin.PULL_NONE,
+    lambda b:set_trigger_b()
+  )
 
   # motor drivers
   global motor_a
@@ -154,6 +186,58 @@ def init ():
   control_b = pid.Controller()
 # /end init
 
+
+def find_zeroes ():
+  # -- locate the zero position of both motors --
+  # try to get to zero with A
+  motor_a.enable()              # prepare the motor to move
+  latest   = encoder_a.Read()   # set a baseline, even if it's probably wrong
+  previous = latest - 10        # artificially set to prevent instant loop escape
+  stalling = 20000              # when this hits  zero, check for stall
+  speed    = 6                  # initial direction is "forward" - up
+  set_trigger_a(value=False)
+  while (not ext_a_trig):       # while we don't see the zero index trigger:
+    latest = encoder_a.Read()   #   check the encoder
+    if (stalling == 0):         #  if the check has counted down to happen:
+      if (previous == latest):  #     if the encoder position hasn't changed:
+        speed = -speed          #       we're stalling, go backwards
+      stalling = 20000          #     reset the countdown to the next check
+      previous = latest         #     update the value to check against
+    else:                       #   otherwise:
+      stalling -= 1             #     keep counting down
+    if (latest > LIM_MAX_A):    #   if we moved too far past it:
+      speed = 6                 #     turn around
+    previous = latest           #   else, all is well and we continue the loop
+    motor_a.set_speed(speed)    #   tell the motor to move
+                                # when we exit the loop, we've found zero
+  encoder_a.Zero()              # set the encoder to 0
+  motor_a.stop()                # stop moving, we're done
+
+  # try to get to zero with B. This is made simple by the existence of a hard-stop.
+  motor_b.enable()              # prepare the motor to move
+  latest   = encoder_b.Read()   # set a baseline, even if it's probably wrong
+  previous = latest - 10        # artificially set to prevent instant loop escape
+  stalling = 20000              # when this hits  zero, check for stall
+  speed    = 5                  # initial direction is "forward" - up
+  set_trigger_b(value=False)
+  while (not ext_b_trig):       # while we don't see the zero index trigger:
+    latest = encoder_b.Read()   #   check the encoder
+    if (stalling == 0):         #  if the check has counted down to happen:
+      if (previous == latest):  #     if the encoder position hasn't changed:
+        speed = -speed          #       we're stalling, go backwards
+      stalling = 20000          #     reset the countdown to the next check
+      previous = latest         #     update the value to check against
+    else:                       #   otherwise:
+      stalling -= 1             #     keep counting down
+    if (latest > LIM_MAX_B):    #   if we moved too far past it:
+      speed = 5                 #     turn around
+    previous = latest           #   else, all is well and we continue the loop
+    motor_b.set_speed(speed)    #   tell the motor to move
+                                # when we exit the loop, we've found zero
+  encoder_b.Zero()              # set the encoder to 0
+  motor_b.stop()                # stop moving, we're done
+# /end go_home
+
 def main ():
   # for loop iteration
   old_pos_a = 0
@@ -161,13 +245,6 @@ def main ():
 
   motor_a.enable()
   motor_b.enable()
-
-  # zero the encoders
-  # assign some strict limits to make zeroing simpler
-  control_a.set_K_P(1)
-  control_b.set_K_P(1)
-  control_a.set_saturation(-10,10)
-  control_b.set_saturation(-10,10)
 
   # attempt to remember where we were on shutdown
   logfile = open('log/encoder.dat','rw')
@@ -179,46 +256,7 @@ def main ():
     encoder_a.Set(0)
     encoder_b.Set(0)
 
-  # set up an interrupt on the index pin of the encoders, to zero them
-#  ext_a = pyb.ExtInt(
-#    pyb.Pin('Y8'),
-#    pyb.ExtInt.IRQ_RISING,
-#    pyb.Pin.PULL_NONE,
-#    lambda a:encoder_a.Zero()
-#  )
-
-#  ext_b = pyb.ExtInt(
-#    pyb.Pin('X2'),
-#    pyb.ExtInt.IRQ_RISING,
-#    pyb.Pin.PULL_NONE,
-#    lambda b:encoder_b.Zero()
-#  )
-
-  # now let's try to get to what we thought was zero
-  zeroing_last = encoder_a.Read()
-  zeroing_now  = zeroing_last
-  while not (zeroing_last == 0) and not (zeroing_now == 0):
-    # read in the encoder value
-    zeroing_now = encoder_a.Read()
-    # evaluate the clamped P controller (del_time isn't important when K_D is 0)
-    speed = control_a.run(0,zeroing_now,100)
-    speed = speed * -1 # flip the direction of A's rotation
-    motor_a.set_speed( speed )
-    zeroing_last = zeroing_now
-  # finished, stop motor
-  motor_a.stop()
-
-  # try to get to zero with B
-#  zeroing_last = encoder_b.Read()
-#  zeroing_now  = zeroing_last
-#  while not (zeroing_last == 0) and not (zeroing_now == 0):
-#    zeroing_now = encoder_b.Read()
-#    motor_b.set_speed(zeroing_act_b)
-#    zeroing_last = zeroing_now
-#    motor_b.set_speed(act_b)
-#    act_b = control_b.run(setpoint_b,new_pos_b,del_time)
-  # finished, stop motor
-#  motor_b.stop()
+  find_zeroes()
 
   # assign the actual values used during run time
   control_a.set_K_P(     0.2)
