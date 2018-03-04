@@ -194,7 +194,7 @@ def find_zeroes ():
   latest   = encoder_a.Read()   # set a baseline, even if it's probably wrong
   previous = latest - 10        # artificially set to prevent instant loop escape
   stalling = 20000              # when this hits  zero, check for stall
-  speed    = 7                  # initial direction is "forward" - up
+  speed    = 7                  # initial direction is CW
   set_trigger_a(value=False)
   while (not ext_a_trig):       # while we don't see the zero index trigger:
     latest = encoder_a.Read()   #   check the encoder
@@ -216,7 +216,7 @@ def find_zeroes ():
   latest   = encoder_b.Read()   # set a baseline, even if it's probably wrong
   previous = latest - 10        # artificially set to prevent instant loop escape
   stalling = 20000              # when this hits  zero, check for stall
-  speed    = -5                  # initial direction is "forward" - up
+  speed    = -5                  # initial direction is up
   set_trigger_b(value=False)
   while (not ext_b_trig):       # while we don't see the zero index trigger:
     latest = encoder_b.Read()   #   check the encoder
