@@ -21,7 +21,7 @@ SERIAL_COUNT_LOOP = 100 # how many control loops per serial check
 FILTER_DIV =  512       # make this 2^N, where N is a number of samples
 
 # set to true to prevent entry into 'main' in case of resets during testing
-TEST_ENDURANCE = True
+TEST_ENDURANCE = False
 
 # shared objects, initialized elsewhere
 serial    = None # comms.py/Serial object
@@ -61,6 +61,7 @@ def test_enc (encoder):
         enc.Zero()
         val = 0
         print('zeroed!')
+        zero_trigger = False
       print(val)
       old = val
       time.sleep_us(1)
@@ -186,7 +187,6 @@ def init ():
   control_b = pid.Controller()
 # /end init
 
-
 def find_zeroes ():
   # -- locate the zero position of both motors --
   # try to get to zero with A
@@ -194,7 +194,7 @@ def find_zeroes ():
   latest   = encoder_a.Read()   # set a baseline, even if it's probably wrong
   previous = latest - 10        # artificially set to prevent instant loop escape
   stalling = 20000              # when this hits  zero, check for stall
-  speed    = 6                  # initial direction is "forward" - up
+  speed    = 7                  # initial direction is "forward" - up
   set_trigger_a(value=False)
   while (not ext_a_trig):       # while we don't see the zero index trigger:
     latest = encoder_a.Read()   #   check the encoder
@@ -205,20 +205,18 @@ def find_zeroes ():
       previous = latest         #     update the value to check against
     else:                       #   otherwise:
       stalling -= 1             #     keep counting down
-    if (latest > LIM_MAX_A):    #   if we moved too far past it:
-      speed = 6                 #     turn around
     previous = latest           #   else, all is well and we continue the loop
     motor_a.set_speed(speed)    #   tell the motor to move
                                 # when we exit the loop, we've found zero
   encoder_a.Zero()              # set the encoder to 0
   motor_a.stop()                # stop moving, we're done
 
-  # try to get to zero with B. This is made simple by the existence of a hard-stop.
+  # try to get to zero with B.
   motor_b.enable()              # prepare the motor to move
   latest   = encoder_b.Read()   # set a baseline, even if it's probably wrong
   previous = latest - 10        # artificially set to prevent instant loop escape
   stalling = 20000              # when this hits  zero, check for stall
-  speed    = 5                  # initial direction is "forward" - up
+  speed    = -5                  # initial direction is "forward" - up
   set_trigger_b(value=False)
   while (not ext_b_trig):       # while we don't see the zero index trigger:
     latest = encoder_b.Read()   #   check the encoder
@@ -229,8 +227,6 @@ def find_zeroes ():
       previous = latest         #     update the value to check against
     else:                       #   otherwise:
       stalling -= 1             #     keep counting down
-    if (latest > LIM_MAX_B):    #   if we moved too far past it:
-      speed = 5                 #     turn around
     previous = latest           #   else, all is well and we continue the loop
     motor_b.set_speed(speed)    #   tell the motor to move
                                 # when we exit the loop, we've found zero
@@ -242,22 +238,10 @@ def main ():
   # for loop iteration
   old_pos_a = 0
   old_pos_b = 0
-
-  motor_a.enable()
-  motor_b.enable()
-
-  # attempt to remember where we were on shutdown
-  logfile = open('log/encoder.dat','rw')
-  val = logfile.readline()
-  if (val):
-    encA.Set(int(val))
-    encB.Set(int(logfile.readline()))
-  else:
-    encoder_a.Set(0)
-    encoder_b.Set(0)
-
+  
+  # zero the encoders
   find_zeroes()
-
+  
   # assign the actual values used during run time
   control_a.set_K_P(     0.2)
   control_a.set_K_I(     0)
@@ -354,13 +338,6 @@ def main ():
   print ('Master closed serial port, disabling motors...')
   motor_a.disable()
   motor_b.disable()
-
-  print ('Storing last known encoder positions...')
-  logfile.seek(0)
-  logfile.write('{:06d}'.format(encoder_a.Read()) )
-  logfile.write('{:06d}'.format(encoder_b.Read()) )
-  time.sleep(1)
-  logfile.close()
   print ('System stopped. Good night.')
 
   machine.soft_reset()

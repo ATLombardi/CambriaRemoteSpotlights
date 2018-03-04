@@ -63,8 +63,8 @@ def main ():
   touch = Tracker ()
   touch.add_external_point(mouse_point)
 
-  spot_l = Entity_Spotlight (x=200, y=200)
-  spot_r = Entity_Spotlight (x=600, y=200)
+  spot_l = Entity_Spotlight (x=100, y=150)
+  spot_r = Entity_Spotlight (x=700, y=150)
 
   is_tracking_l = True
   is_tracking_r = True

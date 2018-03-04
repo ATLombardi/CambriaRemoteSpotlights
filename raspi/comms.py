@@ -10,18 +10,6 @@ import math               # for coordinate mapping calcs
 sign = lambda x: x and (1, -1)[x < 0]
 
 class RS232:
-  # track what we're processing inputs for
-#  __state__  = 0
-
-  # track whether we should send a reply
-#  __flag_reply__ = True
-
-  # stores which side the pyboard is on (L or R)
-#  __side__   = '?'
-
-  # buffer for incoming data
-#  __inbox__  = [' ','A','+000','B','+000']
-
   # command index 'constants'
   CMD_SPA = 2
   CMD_SPB = 4
@@ -145,40 +133,38 @@ class RS232:
     return ret
 
   # translate screen coordinates into encoder counts
-  # -- TO DO --
   def coord_to_enc (self, coord, is_x=True):
     if self.__side__ == 'L': # left-side spotlight
       if (is_x): # X-coordinate
-        ret = coord * -2
+        ret = coord * -4
       else:      # Y-coordinate
-        ret = 0.0005 * (coord ** 3) #coord * abs(coord) #coord ** 2.0
+        ret = -0.001 * (coord ** 3)
     elif self.__side__ == 'R': # right-side spotlight
       if (is_x): # X-coordinate
-        ret = coord * -2
+        ret = coord * -4
       else:      # Y-coordinate
-        ret = 0.0005 * (coord ** 3) #coord * abs(coord) #coord ** 2.0
+        ret = 0.001 * (coord ** 3)
     else:
       ret = coord
 #    print('->enc:',ret)
     return round(ret)
 
   # translate encoder counts into screen coordinates
-  # -- TO DO --
   def enc_to_coord (self, enc, is_x=True):
-    print('->conv:',enc)
+#    print('->conv:',enc)
     if self.__side__ == 'L':
       if (is_x): # X-coord
-        ret = enc / -2.0
+        ret = enc / -4.0
       else:      # Y-coord
-        ret = sign(enc) * ((abs(enc) / 0.0005) ** (1/3.0)) #sign(enc) * math.sqrt(abs(enc))
+        ret = -1 * sign(enc) * ((abs(enc) / 0.001) ** (1/3.0))
     elif self.__side__ == 'R':
       if (is_x): # X-coord
-        ret = enc / -2.0
+        ret = enc / -4.0
       else:      # Y-coord
-        ret = sign(enc) * ((abs(enc) / 0.0005) ** (1/3.0)) #sign(enc) * math.sqrt(abs(enc))
+        ret = sign(enc) * ((abs(enc) / 0.001) ** (1/3.0))
     else:
       ret = enc
-    print('screen<-:',ret)
+#    print('screen<-:',ret)
     return round(ret)
 
   # send a new target position to the pyboard
