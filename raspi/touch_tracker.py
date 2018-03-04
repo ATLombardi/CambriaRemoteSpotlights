@@ -11,7 +11,14 @@ class Tracker:
   points = [ Point(-1,-1) for p in range(10) ]
 
   # returns the closest point to the supplied coords
-  def find_closest (self, x, y, mins=(0,0), dist=100000, fail_point=None):
+  # args:
+  #   x, y: coordinates of the point to search around
+  #   mins: (x,y) minimum coordinates - will omit screen coords from top-left
+  #   dist: maximum (squared) distance to search from point
+  #   fail_point: geom.py/Point object to return if no point was found
+  # return:
+  #   result: the geom.py/Point object representing the found coordinates
+  def find_closest (self, x, y, mins=(0,0), dist=None, fail_point=None):
 #    print ("searching around ",x,",",y)
 #    print ('fail point is',fail_point.get_x(),',',fail_point.get_y())
     temp    = Point (x,y)
@@ -19,6 +26,8 @@ class Tracker:
     succeed = False
     for p in self.points:
       latest = temp.dist2(p)
+      if dist == None: # if no maximum check range was specified
+        dist = 800**2 + 480**2 # set it to the square of the screen size
       if 0 < latest < dist and p.get_x() > mins[0] and p.get_y() > mins[1]:
         dist = latest
         result.move_to(p.get_x(), p.get_y())

@@ -96,7 +96,7 @@ def main ():
   window_h = display_info.current_h;
   print ("window is:",window_w,",",window_h)
   # prepare the screen
-  screen = pygame.display.set_mode( (0,0)) #, pygame.FULLSCREEN)
+  screen = pygame.display.set_mode( (0,0), pygame.FULLSCREEN)
 #  pygame.mouse.set_visible(False)
   pygame.display.set_caption('Spotlight Controls')
   bg = Background('/home/pi/Pictures/stage.jpg',
@@ -258,10 +258,10 @@ def main ():
                 elif x == 3: # left home button
                   # disable tracking to make this easier on the user
                   is_tracking_l = False
-                  spot_l.go_home()
+                  target_l = spot_l.get_home()
                 elif x == 4: # right home button
                   is_tracking_r = False
-                  spot_r.go_home()
+                  target_r = spot_r.get_home()
                 break # we found and resolved a button, stop the For-loop
         elif event.type == pygame.MOUSEBUTTONUP:
           is_mouse_pressed = False
