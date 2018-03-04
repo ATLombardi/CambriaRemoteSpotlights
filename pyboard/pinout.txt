@@ -7,9 +7,9 @@ Y4   T4.4 T11.1             |           |    Y    |          |
 Y5   -                      |           |         |          |       
 Y6   -                      |           |         |          |       
 Y7                          |           |         |          |       
-Y8                          |           |         |          |  E1Z  
-X9   T4.1 UART1T            |     Y     |    Y    |    Y     |  E1B  
-X10  T4.2 UART1R            |     Y     |    Y    |    Y     |  E1A  
+Y8                          |           |         |          |  EBZ  
+X9   T4.1 UART1T            |     Y     |    Y    |    Y     |  EBB  
+X10  T4.2 UART1R            |     Y     |    Y    |    Y     |  EBA  
 X11  -                      |           |         |          |       
 X12  -                      |           |         |          |       
 RST  -                      |           |         |          |       
@@ -27,13 +27,13 @@ X8   T3.2                   |     Y     |    Y    |          |  MAR
 X7   T3.1                   |     Y     |    Y    |          |  MAL  
 X6   T2.1                   |     Y     |    Y    |          |  MAE  
 X5   -                      |           |         |          |  MAD  
-X4   T2.2 T5.2              |     Y     |    Y    |    Y     |  E2A  
-X3   T2.1 T5.1              |     Y     |    Y    |    Y     |  E2B  
-X2   T2.4 T5.4 T9.2 UART2R  |     Y     |    Y    |    Y     |  E2Z  
+X4   T2.2 T5.2              |     Y     |    Y    |    Y     |  EAA  
+X3   T2.1 T5.1              |     Y     |    Y    |    Y     |  EAB  
+X2   T2.4 T5.4 T9.2 UART2R  |     Y     |    Y    |    Y     |  EAZ  
 X1   T2.3 T5.3 T9.1 UART2T  |     Y     |    Y    |    Y     |       
 ----------------------------+-----------+---------+----------+-------
-1    VCC                    |     -     |    -    |    --    |  E1   
-2    VCC                    |     -     |    -    |    --    |  E2   
+1    VCC                    |     -     |    -    |    --    |  EA   
+2    VCC                    |     -     |    -    |    --    |  EB   
 3    VCC                    |     -     |    -    |    --    |  RS   
 4    VCC                    |     -     |    -    |    --    |  M    
 1    GND                    |     -     |    -    |    --    |  E1   
@@ -44,10 +44,10 @@ X1   T2.3 T5.3 T9.1 UART2T  |     Y     |    Y    |    Y     |
 
 PINS REQUIRED:
  MOTOR A      MOTOR B       RS-232       ENCODER A    ENCODER B
--MOT5V       -MOT0V        -RS_5V       -ENC1B       -ENC2B
--MOT1E       -MOT2E        -RS_RX       -ENC1+       -ENC2+
--MOT1R       -MOT2R        -RS_TX       -ENC1A       -ENC2A
--MOT1D       -MOT2D        -RSGND       -ENC1Z       -ENC2Z
--MOT1L       -MOT2L        ------       -ENC1-       -ENC1-
+-MOT  5V     -MOT  0V      -RS_5V       -ENCA B      -ENCB B
+-MOTA E      -MOT2 E       -RS_RX       -ENCA 5V     -ENCB 5V
+-MOTA R      -MOT2 R       -RS_TX       -ENCA A      -ENCB A
+-MOTA D      -MOT2 D       -RSGND       -ENCA Z      -ENCB Z
+-MOTA L      -MOT2 L       ------       -ENCA 0V     -ENCB 0V
 
 
