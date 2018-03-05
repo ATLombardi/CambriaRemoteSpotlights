@@ -33,7 +33,8 @@ class MailboxMonitor:
       # being in its own thread has benefits
       try:
         with self.lock:
-          self.m.update_inbox()
+          if (self.m != None):
+            self.m.update_inbox()
         sleep(0.0001) # I doubt this is accurate, but it doesn't matter
       except SerialException as se:
         print ('Serial error: ', se)
@@ -45,11 +46,13 @@ def main ():
   print ("Starting up...")
 
   print ("init serial...")
+  ser_a = None
+  ser_b = None
   try:
     ser_a = RS232('/dev/ttyUSB0',115200)
     ser_b = RS232('/dev/ttyUSB1',115200)
   except:
-    print ("Error when trying to connect to serial ports!")
+    print ("Error when trying to connect to serial ports. Are both connected?")
 
   print ("done.") # with serial setup
 
@@ -141,23 +144,29 @@ def main ():
       # build a Point where the light says it is
       if (not mail_a_lock.locked()):
         mail_a_lock.acquire()
-        a_point = Point (
-          ser_a.read_inbox(ser_a.CMD_SPA),
-          ser_a.read_inbox(ser_a.CMD_SPB)
-        )
+        if not ser_a == None:
+          a_point = Point (
+            ser_a.read_inbox(ser_a.CMD_SPA),
+            ser_a.read_inbox(ser_a.CMD_SPB)
+          )
+        else:
+         a_point = Point(0,0)
         mail_a_lock.release()
 #      print (a_point.get_x(), ',', a_point.get_y())
 
       if (not mail_b_lock.locked()):
         mail_b_lock.acquire()
-        b_point = Point (
-          ser_b.read_inbox(ser_b.CMD_SPA),
-          ser_b.read_inbox(ser_b.CMD_SPB)
-        )
+        if not ser_b == None:
+          b_point = Point (
+            ser_b.read_inbox(ser_b.CMD_SPA),
+            ser_b.read_inbox(ser_b.CMD_SPB)
+          )
+        else:
+          b_point = Point(0,0)
         mail_b_lock.release()
 
       # if spotlight A is on the left
-      if ser_a.get_side() == 'L':
+      if (not ser_a == None) and (ser_a.get_side() == 'L'):
         # get spotlight positions in relative, convert to abs coords
         spot_l.move_to(a_point.add(spot_l.get_home()))
         spot_r.move_to(b_point.add(spot_r.get_home()))
@@ -199,12 +208,17 @@ def main ():
 #      print ('t: ',target_r.get_x(), ',', target_r.get_y())
 
       # send the target values to the lights
-      if ser_a.get_side() == 'L':
-        ser_a.send_command(rel_l.get_x(), rel_l.get_y())
-        ser_b.send_command(rel_r.get_x(), rel_r.get_y())
-      else:
-        ser_a.send_command(rel_r.get_x(), rel_r.get_y())
-        ser_b.send_command(rel_l.get_x(), rel_l.get_y())
+      if not ser_a == None:
+        if ser_a.get_side() == 'L':
+          ser_a.send_command(rel_l.get_x(), rel_l.get_y())
+        else:
+          ser_a.send_command(rel_r.get_x(), rel_r.get_y())
+  
+      if not ser_b == None:
+        if ser_b.get_side() == 'R':
+          ser_b.send_command(rel_r.get_x(), rel_r.get_y())
+        else:
+          ser_b.send_command(rel_l.get_x(), rel_l.get_y())
 
       # actually do rendering, starting with the background
 #      screen.fill( (255,255,255) )
@@ -278,8 +292,10 @@ def main ():
     touch.active(False)
     a_monitor.terminate()
     b_monitor.terminate()
-    ser_a.close()
-    ser_b.close()
+    if not ser_a == None:
+      ser_a.close()
+    if not ser_b == None:
+      ser_b.close()
     a_monitor_thread.join()
     b_monitor_thread.join()
     print ("Exit reason: ", exit_reason_number)
