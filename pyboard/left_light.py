@@ -40,6 +40,15 @@ encoder_b  = None
 motor_b    = None
 control_b  = None
 
+def test ():
+  global ext_b_trig
+  while True:
+    while not ext_b_trig:
+      pass
+    print ('trig!')
+    ext_b_trig = False
+
+
 def test_enc (encoder):
   enc = None
   enz = None
@@ -216,7 +225,9 @@ def find_zeroes ():
   latest   = encoder_b.Read()   # set a baseline, even if it's probably wrong
   previous = latest - 10        # artificially set to prevent instant loop escape
   stalling = 20000              # when this hits  zero, check for stall
-  speed    = 5                  # initial direction is up
+  speed    = 7                  # initial direction is up
+  motor_b.set_speed(speed)
+  time.sleep_ms(100)
   set_trigger_b(value=False)
   while (not ext_b_trig):       # while we don't see the zero index trigger:
     latest = encoder_b.Read()   #   check the encoder
@@ -228,10 +239,12 @@ def find_zeroes ():
     else:                       #   otherwise:
       stalling -= 1             #     keep counting down
     previous = latest           #   else, all is well and we continue the loop
+#    print (speed)
     motor_b.set_speed(speed)    #   tell the motor to move
                                 # when we exit the loop, we've found zero
   encoder_b.Zero()              # set the encoder to 0
   motor_b.stop()                # stop moving, we're done
+#  print ('done')
 # /end go_home
 
 def main ():
@@ -269,7 +282,6 @@ def main ():
   avg_setpoint_a = setpoint_a
   avg_setpoint_b = setpoint_b
   
-  del_t_hic = 0
   # -- Enter Main Loop --
   while not serial.should_close():
     # determine loop speed
