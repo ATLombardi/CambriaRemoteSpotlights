@@ -296,8 +296,8 @@ def main ():
       ser_a.close()
     if not ser_b == None:
       ser_b.close()
-    a_monitor_thread.join()
-    b_monitor_thread.join()
+    a_monitor_thread.join(timeout=5)
+    b_monitor_thread.join(timeout=5)
     print ("Exit reason: ", exit_reason_number)
     # and finally, bail out
     exit (exit_reason_number)
