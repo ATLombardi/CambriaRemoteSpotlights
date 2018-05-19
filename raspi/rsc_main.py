@@ -33,7 +33,7 @@ class MailboxMonitor:
       # being in its own thread has benefits
       try:
         with self.lock:
-          if (self.m != None):
+          if not self.m == None:
             self.m.update_inbox()
         sleep(0.0001) # I doubt this is accurate, but it doesn't matter
       except SerialException as se:
@@ -99,7 +99,7 @@ def main ():
   window_h = display_info.current_h;
   print ("window is:",window_w,",",window_h)
   # prepare the screen
-  screen = pygame.display.set_mode( (0,0), pygame.FULLSCREEN)
+  screen = pygame.display.set_mode( (0,0))#, pygame.FULLSCREEN)
 #  pygame.mouse.set_visible(False)
   pygame.display.set_caption('Spotlight Controls')
   bg = Background('/home/pi/Pictures/stage.jpg',
@@ -137,7 +137,22 @@ def main ():
   
   a_point = Point(0,0)
   b_point = Point(0,0)
-
+  
+  # reset light
+#  if not ser_a == None:
+#    ready = False
+#    while not ready:
+#      ser_a.send('K')
+#      char = ser_a.recv()
+#      if char == b'Z':
+#        ready = True
+#  if not ser_b == None:
+#    ready = False
+#    while not ready:
+#      ser_b.send('K')
+#      char = ser_b.recv()
+#      if char == b'Z':
+#        ready = True
   print ("Start-up done. Running...")
   try:
     while not should_stop:
@@ -181,6 +196,8 @@ def main ():
       # if the mouse is being dragged, update the relevant Point
       if is_mouse_pressed:
         mouse_point.move_to_array(pygame.mouse.get_pos())
+      else:
+        mouse_point.move_to(-1,-1)
 
       # find closest touch point to each light
       if is_tracking_l:
@@ -257,7 +274,7 @@ def main ():
         elif event.type == pygame.MOUSEBUTTONDOWN:
           # if we're clicking outside of bounds, check for buttons
           pos = pygame.mouse.get_pos()
-          is_mouse_pressed = True
+          
           if pos[1] <= BUTTON_HEIGHT:
             for x in range(0,len(buttons)):
               if buttons[x].contains(pos):
@@ -277,6 +294,8 @@ def main ():
                   is_tracking_r = False
                   target_r = spot_r.get_home()
                 break # we found and resolved a button, stop the For-loop
+          else:
+            is_mouse_pressed = True
         elif event.type == pygame.MOUSEBUTTONUP:
           is_mouse_pressed = False
 
